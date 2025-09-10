@@ -1,0 +1,602 @@
+<!-- v1 -->
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XPath Copier Extension</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+        }
+        h1 {
+            color: #4a4a4a;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h1 .icon {
+            font-size: 24px;
+        }
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status.active {
+            background-color: #e6f7ee;
+            color: #0d6832;
+            border: 1px solid #4caf50;
+        }
+        .status.inactive {
+            background-color: #fef6e6;
+            color: #8a6118;
+            border: 1px solid #ffc107;
+        }
+        .instructions {
+            background-color: #f0f5ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border-left: 4px solid #4a6ee0;
+        }
+        .instructions ol {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        .feature-list {
+            margin: 20px 0;
+        }
+        .feature {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 10px;
+        }
+        .feature .icon {
+            color: #4a6ee0;
+            font-weight: bold;
+            min-width: 24px;
+        }
+        .code-block {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+        }
+        .toggle-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .footer {
+            margin-top: 25px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        .highlight {
+            background-color: #fff8e1;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <span class="icon">🧭</span>
+            XPath Copier Extension
+        </h1>
+        
+        <div class="status active">
+            <span class="icon">✅</span>
+            <span>Extension is active. Right-click on any element to copy its XPath.</span>
+        </div>
+        
+        <div class="toggle-container">
+            <div>
+                <strong>Enable XPath Copying</strong>
+                <p>Toggle to enable/disable the extension functionality</p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to Use:</h3>
+            <ol>
+                <li>Navigate to any webpage</li>
+                <li>Right-click on any element you want to get the XPath for</li>
+                <li>The XPath will be automatically copied to your clipboard</li>
+                <li>A notification will appear briefly to confirm the copy action</li>
+            </ol>
+        </div>
+        
+        <div class="feature-list">
+            <h3>Features:</h3>
+            
+            <div class="feature">
+                <span class="icon">📋</span>
+                <span>Automatically copies XPath to clipboard on right-click</span>
+            </div>
+            
+            <div class="feature">
+                <span class="icon">🔔</span>
+                <span>Shows visual feedback with a toast notification</span>
+            </div>
+            
+            <div class="feature">
+                <span class="icon">🆔</span>
+                <span>Prioritizes element IDs for shorter XPaths</span>
+            </div>
+            
+            <div class="feature">
+                <span class="icon">⚙️</span>
+                <span>Easy to enable/disable with a toggle switch</span>
+            </div>
+        </div>
+        
+        <h3>Example XPath Output:</h3>
+        <div class="code-block">
+            // For an element with ID: 
+            //*[@id="submit-button"]
+            
+            // For an element without ID:
+            /html/body/div[1]/main/section[2]/div/form/button[1]
+        </div>
+        
+        <div class="footer">
+            <p>This extension works on all websites. The XPath is automatically copied when you right-click on any element.</p>
+            <p>Note: On some pages, clipboard access might be restricted for security reasons.</p>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('.switch input').addEventListener('change', function(e) {
+            const statusDiv = document.querySelector('.status');
+            if (e.target.checked) {
+                statusDiv.innerHTML = '<span class="icon">✅</span> Extension is active. Right-click on any element to copy its XPath.';
+                statusDiv.className = 'status active';
+            } else {
+                statusDiv.innerHTML = '<span class="icon">⏸️</span> Extension is paused. Enable toggle to activate.';
+                statusDiv.className = 'status inactive';
+            }
+        });
+    </script>
+</body>
+</html> -->
+
+
+<!-- v2 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XPath Copier Extension</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        header {
+            background: #4a6ee0;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        .icon {
+            font-size: 2rem;
+        }
+        .subtitle {
+            font-weight: 300;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .instructions {
+            background: #f0f5ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 5px solid #4a6ee0;
+        }
+        h2 {
+            color: #4a6ee0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h3 {
+            color: #4a6ee0;
+            margin: 20px 0 10px;
+        }
+        ol {
+            padding-left: 25px;
+            margin: 15px 0;
+        }
+        li {
+            margin-bottom: 12px;
+        }
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .feature {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s;
+        }
+        .feature:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .feature .icon {
+            font-size: 1.5rem;
+            color: #4a6ee0;
+        }
+        .demo-area {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .demo-element {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #4a6ee0;
+            color: white;
+            border-radius: 8px;
+            margin: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .demo-element:hover {
+            background: #3a5bc0;
+            transform: scale(1.05);
+        }
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #e6f7ee;
+            color: #0d6832;
+            border: 1px solid #4caf50;
+        }
+        .status .icon {
+            font-size: 1.8rem;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .highlight {
+            background: #fff8e1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 25px;
+            background: #4caf50;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(100px);
+            transition: all 0.3s ease;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast .icon {
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <span class="icon">🧭</span>
+                XPath Copier Extension
+            </h1>
+            <p class="subtitle">Right-click on any element and select "Copy XPath" from the context menu</p>
+        </header>
+        
+        <div class="content">
+            <div class="instructions">
+                <h2><span class="icon">ℹ️</span> How to Use</h2>
+                <ol>
+                    <li>Navigate to any webpage</li>
+                    <li><span class="highlight">Right-click</span> on any element you want to get the XPath for</li>
+                    <li>Select the <span class="highlight">"Copy XPath"</span> option from the context menu</li>
+                    <li>The XPath will be automatically copied to your clipboard</li>
+                    <li>A toast notification will appear to confirm the action</li>
+                </ol>
+            </div>
+            
+            <div class="status">
+                <span class="icon">✅</span>
+                <span>Extension is active. Right-click on any element and select "Copy XPath" from the context menu.</span>
+            </div>
+            
+            <h2><span class="icon">⭐</span> Features</h2>
+            <div class="feature-list">
+                <div class="feature">
+                    <span class="icon">📋</span>
+                    <span>Adds "Copy XPath" to right-click context menu</span>
+                </div>
+                <div class="feature">
+                    <span class="icon">🔔</span>
+                    <span>Shows visual feedback with a toast notification</span>
+                </div>
+                <div class="feature">
+                    <span class="icon">🆔</span>
+                    <span>Prioritizes element IDs for shorter XPaths</span>
+                </div>
+                <div class="feature">
+                    <span class="icon">🚀</span>
+                    <span>Works on all websites</span>
+                </div>
+                <div class="feature">
+                    <span class="icon">⚡</span>
+                    <span>Fast and lightweight</span>
+                </div>
+                <div class="feature">
+                    <span class="icon">🔒</span>
+                    <span>No data collection - works locally</span>
+                </div>
+            </div>
+            
+            <div class="demo-area">
+                <h2><span class="icon">🧪</span> Try It Out</h2>
+                <p>Right-click on this demo element and select "Copy XPath"</p>
+                <div class="demo-element" id="demoButton">Click Me</div>
+            </div>
+            
+            <h2><span class="icon">📝</span> Example XPath Output</h2>
+            <div class="code-block">
+// For an element with ID (preferred):
+//*[@id="demoButton"]
+
+// For an element without ID:
+/html/body/div[1]/div[2]/div[3]/div[2]/div
+            </div>
+        </div>
+        
+        <footer>
+            <p>This extension adds a "Copy XPath" option to the right-click context menu on all websites.</p>
+            <p>Note: On some pages with strict security policies, clipboard access might be restricted.</p>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast">
+        <span class="icon">✅</span>
+        <span>XPath copied to clipboard!</span>
+    </div>
+
+    <script>
+        // Function to build XPath for an element
+        function getXPath(element) {
+            if (element.id) {
+                return '//*[@id="' + element.id + '"]';
+            }
+            if (element === document.body) {
+                return '/html/body';
+            }
+
+            let ix = 0;
+            let siblings = element.parentNode ? element.parentNode.childNodes : [];
+            for (let i = 0; i < siblings.length; i++) {
+                let sibling = siblings[i];
+                if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
+                    ix++;
+                    if (sibling === element) {
+                        return getXPath(element.parentNode) + '/' + element.tagName.toLowerCase() + '[' + ix + ']';
+                    }
+                }
+            }
+        }
+
+        // Show toast notification
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Listen to right-click and add custom context menu item
+        document.addEventListener('contextmenu', function(e) {
+            // In a real extension, we would create a context menu item here
+            // For this demo, we'll simulate the behavior
+            e.preventDefault();
+            
+            // Get the XPath
+            const xpath = getXPath(e.target);
+            
+            // Simulate showing a custom context menu
+            const customMenu = document.createElement('div');
+            customMenu.style.position = 'fixed';
+            customMenu.style.left = e.pageX + 'px';
+            customMenu.style.top = e.pageY + 'px';
+            customMenu.style.background = 'white';
+            customMenu.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+            customMenu.style.borderRadius = '6px';
+            customMenu.style.padding = '5px 0';
+            customMenu.style.zIndex = '10000';
+            
+            const menuItem = document.createElement('div');
+            menuItem.textContent = 'Copy XPath';
+            menuItem.style.padding = '8px 15px';
+            menuItem.style.cursor = 'pointer';
+            menuItem.style.fontSize = '14px';
+            
+            menuItem.addEventListener('mouseenter', function() {
+                this.style.background = '#f0f5ff';
+            });
+            
+            menuItem.addEventListener('mouseleave', function() {
+                this.style.background = 'white';
+            });
+            
+            menuItem.addEventListener('click', function() {
+                // Copy to clipboard
+                navigator.clipboard.writeText(xpath).then(() => {
+                    showToast();
+                }).catch(err => {
+                    console.error('Could not copy text: ', err);
+                });
+                
+                document.body.removeChild(customMenu);
+            });
+            
+            customMenu.appendChild(menuItem);
+            document.body.appendChild(customMenu);
+            
+            // Remove menu when clicking elsewhere
+            const removeMenu = function() {
+                document.body.removeChild(customMenu);
+                document.removeEventListener('click', removeMenu);
+            };
+            
+            setTimeout(() => {
+                document.addEventListener('click', removeMenu);
+            }, 10);
+        });
+    </script>
+</body>
+</html>
