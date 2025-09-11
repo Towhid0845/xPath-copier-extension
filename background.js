@@ -8,7 +8,7 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 
   // children
-  const fields = ["Job Title", "Job Link", "Job Location", "Company Name"];
+  const fields = ["Start URL", "Company Name", "Company Logo", "Job Title", "Job Location", "Job Content", "Source Country", "Lang Code", "Job Link", "Playwright Selector", "Playwright"];
   fields.forEach(field => {
     chrome.contextMenus.create({
       id: field.toLowerCase().replace(/\s+/g, "-"),
