@@ -3,7 +3,7 @@
   "name": "XPath Copier",
   "version": "1.0",
   "description": "Copy XPath of elements from the context menu",
-  "permissions": ["activeTab", "scripting", "clipboardWrite", "contextMenus"],
+  "permissions": ["activeTab", "scripting", "storage", "clipboardWrite", "contextMenus"],
   "background": {
     "service_worker": "background.js"
   },

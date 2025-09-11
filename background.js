@@ -1,32 +1,3 @@
-//v1.0.0
-// chrome.runtime.onInstalled.addListener(() => {
-//   chrome.contextMenus.create({
-//     id: "copy-xpath",
-//     title: "Copy XPath",
-//     contexts: ["all"]
-//   });
-// });
-
-// // ensure content.js is injected when tab updates
-// chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-//   if (changeInfo.status === "complete" && /^https?:/.test(tab.url)) {
-//     chrome.scripting.executeScript({
-//       target: { tabId },
-//       files: ["content.js"]
-//     }).catch(err => console.warn("Already injected:", err));
-//   }
-// });
-
-// chrome.contextMenus.onClicked.addListener((info, tab) => {
-//   if (info.menuItemId === "copy-xpath") {
-//     // Send message to content script to copy XPath
-//     chrome.tabs.sendMessage(tab.id, {
-//       action: "copyXPath"
-//     });
-//   }
-// });
-
-
 
 chrome.runtime.onInstalled.addListener(() => {
   // parent

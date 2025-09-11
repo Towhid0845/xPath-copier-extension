@@ -1,116 +1,3 @@
-//v1.0.0
-// if (!window.__xPathCopierInjected) {
-//   window.__xPathCopierInjected = true;
-//   let lastRightClickedElement = null;
-
-//   // Capture the element that was right-clicked
-//   document.addEventListener('contextmenu', (event) => {
-//     lastRightClickedElement = event.target;
-//   }, true);
-
-//   // Listen for messages from background script
-//   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-//     if (request.action === "copyXPath" && lastRightClickedElement) { //v1.1.0
-//       const xpath = getXPath(lastRightClickedElement);
-//       copyToClipboard(xpath);
-//       showToast("XPath copied to clipboard!", xpath);
-//     }
-//     // return true;
-//     // if (request.action === "copyXPath") { //v1.2.0
-//     //   if (lastRightClickedElement && document.contains(lastRightClickedElement)) {
-//     //     const xpath = getXPath(lastRightClickedElement);
-//     //     copyToClipboard(xpath);
-//     //     showToast("XPath copied to clipboard!", xpath);
-//     //   } else {
-//     //     showToast("Could not find element (DOM changed)");
-//     //   }
-//     // }
-//   });
-
-//   function getXPath(element) {
-//     if (element.className && typeof element.className === "string") {
-//       // take only the first class (for simplicity)
-//       // const className = element.className.trim().split(/\s+/)[0];
-
-//       // use full class string exactly as it appears
-//       const className = element.className.trim();
-//       if (className) {
-//         return '//' + element.tagName.toLowerCase() + '[contains(@class, "' + className + '")]';
-//       }
-//     }
-//     if (element.id) {
-//       return '//*[@id="' + element.id + '"]';
-//     }
-//     if (element === document.body) {
-//       return '/html/body';
-//     }
-
-//     let ix = 0;
-//     let siblings = element.parentNode ? element.parentNode.childNodes : [];
-//     for (let i = 0; i < siblings.length; i++) {
-//       let sibling = siblings[i];
-//       if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
-//         ix++;
-//         if (sibling === element) {
-//           return getXPath(element.parentNode) + '/' + element.tagName.toLowerCase() + '[' + ix + ']';
-//         }
-//       }
-//     }
-//   }
-
-//   function copyToClipboard(text) {
-//     navigator.clipboard.writeText(text).catch(err => {
-//       console.error('Failed to copy: ', err);
-//     });
-//   }
-
-//   function showToast(message, xpath) {
-//     const toast = document.createElement("div");
-//     toast.style.cssText = `
-//     position: fixed;
-//     bottom: 20px;
-//     right: 20px;
-//     padding: 15px;
-//     background: #4caf50;
-//     color: white;
-//     border-radius: 8px;
-//     z-index: 999999;
-//     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-//     font-family: Arial, sans-serif;
-//     max-width: 400px;
-//     word-break: break-all;
-//   `;
-
-//     // Create message element
-//     const messageEl = document.createElement("div");
-//     messageEl.textContent = message;
-//     messageEl.style.cssText = `
-//     font-weight: bold;
-//     margin-bottom: 8px;
-//     font-size: 14px;
-//   `;
-
-//     // Create XPath element
-//     const xpathEl = document.createElement("div");
-//     xpathEl.textContent = xpath;
-//     xpathEl.style.cssText = `
-//     background: rgba(255, 255, 255, 0.2);
-//     padding: 8px;
-//     border-radius: 4px;
-//     font-size: 12px;
-//     font-family: 'Courier New', monospace;
-//     overflow: hidden;
-//     text-overflow: ellipsis;
-//   `;
-
-//     toast.appendChild(messageEl);
-//     toast.appendChild(xpathEl);
-//     document.body.appendChild(toast);
-
-//     setTimeout(() => toast.remove(), 5000); // Show for 5 seconds instead of 3
-//   }
-// }
-
 
 if (!window.__xPathCopierInjected) {
   window.__xPathCopierInjected = true;
@@ -121,13 +8,23 @@ if (!window.__xPathCopierInjected) {
     lastRightClickedElement = event.target;
   }, true);
 
+  // build sidebar
+  createSidebar();
+
   // listen for background messages
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "copyXPath" && lastRightClickedElement) {
       const xpath = getXPath(lastRightClickedElement);
 
-      // copy directly (no toast)
-      copyToClipboard(`${xpath}`);
+      // map field id (e.g. job-title) to input field
+      const fieldId = request.field;
+      const input = document.querySelector(`#xpath-${fieldId}`);
+      if (input) {
+        input.value = xpath;
+      }
+
+      // still copy to clipboard
+      copyToClipboard(xpath);
     }
   });
 
@@ -163,6 +60,60 @@ if (!window.__xPathCopierInjected) {
   function copyToClipboard(text) {
     navigator.clipboard.writeText(text).catch(err => {
       console.error('Failed to copy: ', err);
+    });
+  }
+
+  function createSidebar() {
+    const sidebar = document.createElement("div");
+    sidebar.id = "xpath-sidebar";
+    sidebar.style.cssText = `
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 300px;
+      height: 100%;
+      background: #fff;
+      border-left: 2px solid #ccc;
+      box-shadow: -2px 0 8px rgba(0,0,0,0.2);
+      z-index: 999999;
+      padding: 10px;
+      font-family: Arial, sans-serif;
+      overflow-y: auto;
+    `;
+
+    sidebar.innerHTML = `
+      <h3 style="margin-top:0;">XPath Collector</h3>
+      <label>Job Title</label>
+      <input id="xpath-job-title" type="text" style="width:100%;margin-bottom:10px;" readonly>
+
+      <label>Job Link</label>
+      <input id="xpath-job-link" type="text" style="width:100%;margin-bottom:10px;" readonly>
+
+      <label>Job Location</label>
+      <input id="xpath-job-location" type="text" style="width:100%;margin-bottom:10px;" readonly>
+
+      <label>Company Name</label>
+      <input id="xpath-company-name" type="text" style="width:100%;margin-bottom:10px;" readonly>
+
+      <button id="send-xpaths" style="width:100%;padding:8px;background:#4caf50;color:white;border:none;border-radius:4px;cursor:pointer;">
+        Send
+      </button>
+    `;
+
+    document.body.appendChild(sidebar);
+
+    // handle send click
+    document.getElementById("send-xpaths").addEventListener("click", () => {
+      const data = {
+        jobTitle: document.getElementById("xpath-job-title").value,
+        jobLink: document.getElementById("xpath-job-link").value,
+        jobLocation: document.getElementById("xpath-job-location").value,
+        companyName: document.getElementById("xpath-company-name").value,
+      };
+      console.log("Collected XPaths:", data);
+
+      // 🚀 Future: send to API here
+      // fetch("https://your-api-endpoint.com/save", { method:"POST", body: JSON.stringify(data) })
     });
   }
 }

@@ -1,0 +1,198 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>XPath Form</title>
+  <style>
+    body { font-family: Arial, sans-serif; width: 300px; padding: 10px; }
+    .collapsed { height: 30px; overflow: hidden; }
+    #toggle { cursor: pointer; margin-bottom: 10px; font-weight: bold; }
+    label { font-size: 13px; display: block; margin-top: 6px; }
+    input { width: 100%; padding: 4px; margin-top: 2px; }
+    button { margin-top: 10px; width: 100%; padding: 6px; }
+  </style>
+</head>
+<body>
+  <div id="toggle">🔽 Minimize / Expand</div>
+  <div id="formContainer">
+    <label>Job Title <input id="job-title" type="text"></label>
+    <label>Job Link <input id="job-link" type="text"></label>
+    <label>Job Location <input id="job-location" type="text"></label>
+    <label>Company Name <input id="company-name" type="text"></label>
+    <button id="sendBtn">Send</button>
+    <button id="clearBtn">Clear</button>
+  </div>
+  <script src="sidebar.js"></script>
+</body>
+</html> -->
+
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>XPath Sidebar</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    #sidebar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 320px;
+      height: 100%;
+      background: #f9f9f9;
+      border-left: 2px solid #ccc;
+      box-shadow: -2px 0 8px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease;
+      z-index: 999999;
+    }
+
+    #sidebar.minimized {
+      transform: translateX(100%);
+    }
+
+    #sidebar header {
+      background: #4caf50;
+      color: white;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #sidebar header h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    #toggleBtn {
+      background: white;
+      color: #4caf50;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    form {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 6px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    #sendBtn {
+      margin-top: 16px;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: #4caf50;
+      color: white;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <header>
+      <h2>XPath Collector</h2>
+      <button id="toggleBtn">–</button>
+    </header>
+
+    <form id="xpathForm">
+      <label for="job-title">Job Title</label>
+      <input type="text" id="job-title" name="job-title">
+
+      <label for="job-link">Job Link</label>
+      <input type="text" id="job-link" name="job-link">
+
+      <label for="job-location">Job Location</label>
+      <input type="text" id="job-location" name="job-location">
+
+      <label for="company-name">Company Name</label>
+      <input type="text" id="company-name" name="company-name">
+
+      <button type="button" id="sendBtn">Send</button>
+    </form>
+  </div>
+
+  <script src="sidebar.js"></script>
+</body>
+</html> -->
+
+
+<!-- 
+<!DOCTYPE html>
+<html>
+<head>
+  <title>XPath Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 10px;
+      background: #f9f9f9;
+    }
+    h3 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      text-align: center;
+    }
+    #toggleBtn {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      margin-bottom: 10px;
+      width: 100%;
+      border-radius: 4px;
+    }
+    #list {
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 13px;
+    }
+    .xpath-item {
+      background: #fff;
+      margin-bottom: 5px;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .xpath-item input {
+      width: 100%;
+      border: none;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+  <h3>XPath Collector</h3>
+  <button id="toggleBtn">Minimize</button>
+  <div id="list"></div>
+
+  <script src="sidebar.js"></script>
+</body>
+</html> -->
