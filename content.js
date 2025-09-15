@@ -14,11 +14,6 @@ if (!window.__xPathCopierInjected) {
     createOpenButton();
     populateFields(savedData);
 
-    // Initially show/hide based on saved state
-    // if (!isSidebarExpanded) {
-    //   closeSidebar();
-    // }
-
     if (isSidebarExpanded) {
       openSidebar();
     } else {
@@ -90,128 +85,148 @@ if (!window.__xPathCopierInjected) {
     sidebar.id = "xpath-sidebar";
 
     sidebar.style.cssText = `
-    position: fixed;
-    top: 48%;
-    right: -350px;
-    width: 350px;
-    height: auto;
-    max-height: 80vh;
-    background: #fff;
-    border: 2px solid #ccc;
-    border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    z-index: 999999;
-    padding: 15px;
-    font-family: Arial, sans-serif;
-    overflow-y: auto;
-    overflow-x: hidden;
-    transition: all 0.5s ease;
-    transform: translateY(-48%);
-  `;
-    //start url -> company name -> logo -> source country -> lang code -> job link -> job title -> location -> content -> playwright -> selector
-    // <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    //   <h3 style="margin:0; font-size: 24px; font-weight: bold;">XPath Collector</h3>
-    //   <button id="close-sidebar" style="background: none; border: none; cursor: pointer; font-size: 20px; width: 30px; height:30px; padding: 0">
-    //     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    //       <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-    //     </svg>
-    //   </button>
-    // </div>
+      position: fixed;
+      top: 48%;
+      right: -350px;
+      width: 350px;
+      height: auto;
+      max-height: 80vh;
+      background: #fff;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      z-index: 999999;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      transition: all 0.5s ease;
+      transform: translateY(-48%);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    `;
+
     sidebar.innerHTML = `
-      <div style="position: sticky; top: 0; background: #fff; padding: 0; z-index: 10;">
+      <div style="position: sticky; top: 0; background: #fff; padding: 10px 15px; z-index: 10;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h3 style="margin:0; font-size: 24px; font-weight: bold;">XPath Collector</h3>
+          <h3 style="margin:0; font-size: 20px; font-weight: bold; color: #000">XPath Collector</h3>
           <button id="close-sidebar" style="background: none; border: none; cursor: pointer; font-size: 20px; width: 30px; height:30px; padding: 0">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" color: #000; xmlns="http://www.w3.org/2000/svg">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
         </div>
-        <hr style="margin: 10px 0 20px -15px; width: 350px">
       </div>
-      <div id="sidebar-content" style="height: calc(100% - 60px); overflow-y: auto; padding-right: 5px;">
+      <hr style="margin: 0; padding: 0;">
+      <div id="sidebar-content" style="height: calc(100% - 60px); overflow-y: auto; padding: 15px;  flex: 1;">
+
         <div style="margin-bottom: 8px;">
-          <label style="display: block; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Start URL</label>
-          <input id="xpath-start-url" type="text" style="width:100%; height: 29px; font-size: 15px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+          <label style="display: block; color: #000; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Start URL</label>
+          <input id="xpath-start-url" type="text" style="width:100%; height: 29px; font-size: 15px; box-sizing: border-box; margin-bottom: 0; background-color: #fff; color: #000; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
         </div>
 
         <div style="margin-bottom: 8px;">
-          <label style="display: block; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Company Name</label>
-          <input id="xpath-company-name" type="text" style="width:100%; height: 29px; font-size: 15px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+          <label style="display: block; color: #000; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Company Name</label>
+          <input id="xpath-company-name" type="text" style="width:100%; height: 29px; font-size: 15px; box-sizing: border-box; margin-bottom: 0; background-color: #fff; color: #000; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
         </div>
       
         <div style="margin-bottom: 8px;">
-          <label style="display: block; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Company Logo</label>
-          <input id="xpath-company-logo" type="text" style="width:100%; height: 29px; font-size: 15px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+          <label style="display: block; color: #000; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Company Logo</label>
+          <input id="xpath-company-logo" type="text" style="width:100%; height: 29px; font-size: 15px; box-sizing: border-box; margin-bottom: 0; background-color: #fff; color: #000; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
         </div>
 
         <div style="margin-bottom: 8px;">
-          <label style="display: block; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Source Country</label>
-          <input id="xpath-source-country" type="text" style="width:100%; height: 29px; font-size: 15px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+          <label style="display: block; color: #000; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Source Country</label>
+          <input id="xpath-source-country" type="text" style="width:100%; height: 29px; font-size: 15px; box-sizing: border-box; margin-bottom: 0; background-color: #fff; color: #000; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
         </div>
 
         <div style="margin-bottom: 8px;">
-          <label style="display: block; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Lang Code</label>
-          <input id="xpath-lang-code" type="text" style="width:100%; height: 29px; font-size: 15px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+          <label style="display: block; color: #000; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Lang Code</label>
+          <input id="xpath-lang-code" type="text" style="width:100%; height: 29px; font-size: 15px; box-sizing: border-box; margin-bottom: 0; background-color: #fff; color: #000; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
         </div>
       
         <div style="margin-bottom: 8px;">
-          <label style="display: block; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Job Link</label>
-          <input id="xpath-job-link" type="text" style="width:100%; height: 29px; font-size: 15px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+          <label style="display: block; color: #000; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Job Link</label>
+          <input id="xpath-job-link" type="text" style="width:100%; height: 29px; font-size: 15px; box-sizing: border-box; margin-bottom: 0; background-color: #fff; color: #000; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
         </div>
 
         <div style="margin-bottom: 8px;">
-          <label style="display: block; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Job Title</label>
-          <input id="xpath-job-title" type="text" style="width:100%; height: 29px; font-size: 15px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+          <label style="display: block; color: #000; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Job Title</label>
+          <input id="xpath-job-title" type="text" style="width:100%; height: 29px; font-size: 15px; box-sizing: border-box; margin-bottom: 0; background-color: #fff; color: #000; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
         </div>
 
         <div style="margin-bottom: 8px;">
-          <label style="display: block; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Job Location</label>
-          <input id="xpath-job-location" type="text" style="width:100%; height: 29px; font-size: 15px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+          <label style="display: block; color: #000; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Job Location</label>
+          <input id="xpath-job-location" type="text" style="width:100%; height: 29px; font-size: 15px; box-sizing: border-box; margin-bottom: 0; background-color: #fff; color: #000; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
         </div>
 
         <div style="margin-bottom: 8px;">
-          <label style="display: block; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Job Content</label>
-          <input id="xpath-job-content" type="text" style="width:100%; height: 29px; font-size: 15px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+          <label style="display: block; color: #000; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Job Content</label>
+          <input id="xpath-job-content" type="text" style="width:100%; height: 29px; font-size: 15px; box-sizing: border-box; margin-bottom: 0; background-color: #fff; color: #000; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
         </div>
 
         <div style="margin-bottom: 8px;">
-          <label style="display: block; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Playwright</label>
-          <input id="xpath-playwright" type="text" style="width:100%; height: 29px; font-size: 15px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+          <label style="display: block; color: #000; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Playwright</label>
+          <div style="display: flex; gap: 15px; align-items: center;">
+            <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+              <input type="radio" name="playwright" value="true" style="margin: 0;">
+              <span style="font-size: 13px;">Yes</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+              <input type="radio" name="playwright" value="false" style="margin: 0;" checked>
+              <span style="font-size: 13px;">No</span>
+            </label>
+          </div>
         </div>
-
-        <div style="margin-bottom: 8px;">
-          <label style="display: block; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Playwright Selector</label>
-          <input id="xpath-playwright-selector" type="text" style="width:100%; height: 29px; font-size: 15px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+        
+        <div id="playwright-selector-container" style="margin-bottom: 8px; display: none;">
+          <label style="display: block; color: #000; font-weight: bold; margin-bottom: 2px; font-size: 13px; line-height: 20px">Playwright Selector</label>
+          <input id="xpath-playwright-selector" type="text" style="width:100%; height: 29px; font-size: 15px; box-sizing: border-box; margin-bottom: 0; background-color: #fff; color: #000; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
         </div>
-
+        
         <div style="display: flex; justify-content: center; gap: 10px;margin-top: 24px;">
-          <button id="send-xpaths" style="width:fit-content; font-size:16px; padding:4px 25px; background:#4caf50; color:white; border:none; border-radius:25px; cursor:pointer;">
-            Generate Spider
-          </button>
-          
-          <button id="clear-fields" style="width:fit-content; font-size:16px; padding:4px 25px; background:#f44336; color:white; border:none; border-radius:25px; cursor:pointer;">
-            Clear All
+        <button id="send-xpaths" style="width:fit-content; font-size:16px; padding:4px 25px; background:#4caf50; color:white; border:none; border-radius:25px; cursor:pointer; line-height: 24px;">
+        Generate Spider
+        </button>
+        
+        <button id="clear-fields" style="width:fit-content; font-size:16px; padding:4px 25px; background:#f44336; color:white; border:none; border-radius:25px; cursor:pointer; line-height: 24px;">
+          Clear All
           </button>
         </div>
       </div>
-      `;
+    `;
 
     document.body.appendChild(sidebar);
 
     // Add event listeners
     document.getElementById("close-sidebar").addEventListener("click", closeSidebar);
+    document.getElementById("send-xpaths").addEventListener("click", sendXPaths);
+    document.getElementById("clear-fields").addEventListener("click", clearFields);
 
-    const inputs = sidebar.querySelectorAll('input');
+     // Radio button change handler
+    const radioButtons = sidebar.querySelectorAll('input[name="playwright"]');
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const fieldId = e.target.name;
+            const value = e.target.value === 'true';
+            saveToStorage(fieldId, value);
+            togglePlaywrightSelector(value);
+        });
+    })
+
+    const inputs = sidebar.querySelectorAll('input[type="text"]');
     inputs.forEach(input => {
       input.addEventListener('input', (e) => {
         const fieldId = e.target.id.replace('xpath-', '');
         saveToStorage(fieldId, e.target.value);
       });
-    });
+    });  
+  }
 
-    document.getElementById("send-xpaths").addEventListener("click", sendXPaths);
-    document.getElementById("clear-fields").addEventListener("click", clearFields);
+  function togglePlaywrightSelector(show) {
+    const container = document.getElementById("playwright-selector-container");
+    if (container) {
+        container.style.display = show ? 'block' : 'none';
+    }
   }
 
   function createOpenButton() {
@@ -277,18 +292,29 @@ if (!window.__xPathCopierInjected) {
     chrome.storage.local.set({ sidebarState: true });
   }
 
-  function populateFields(data) {
-    if (!isSidebarExpanded) return;
+ function populateFields(data) {
+      if (!isSidebarExpanded) return;
 
-    setTimeout(() => {
-      Object.keys(data).forEach(field => {
-        const input = document.querySelector(`#xpath-${field}`);
-        if (input) {
-          input.value = data[field] || '';
-        }
-      });
-    }, 100);
-  }
+      setTimeout(() => {
+        Object.keys(data).forEach(field => {
+          if (field === 'playwright') {
+                  // Set radio button
+                  const value = data[field] ? 'true' : 'false';
+                  const radio = document.querySelector(`input[name="playwright"][value="${value}"]`);
+                  if (radio) {
+                      radio.checked = true;
+                      togglePlaywrightSelector(data[field]);
+                  }
+              } else {
+
+                const input = document.querySelector(`#xpath-${field}`);
+                if (input) {
+                  input.value = data[field] || '';
+                }
+              }
+        });
+      }, 100);
+    }
 
   function saveToStorage(field, value) {
     chrome.storage.local.get(['xpathData'], (result) => {
@@ -299,50 +325,12 @@ if (!window.__xPathCopierInjected) {
   }
 
   function sendXPaths() {
-    // v.1
-    // chrome.storage.local.get(null, (data) => {
-    //   const xpathData = data || {};
-
-    //   // Map storage keys (kebab-case) → API keys (snake_case)
-    //   const payload = {
-    //     start_url: xpathData["start-url"] || "",
-    //     company_name: xpathData["company-name"] || "",
-    //     company_logo: xpathData["company-logo"] || "",
-    //     job_title_xpath: xpathData["job-title"] || "",
-    //     job_location_xpath: xpathData["job-location"] || "",
-    //     job_content_xpath: xpathData["job-content"] || "",
-    //     source_country: xpathData["source-country"] || "",
-    //     lang_code: xpathData["lang-code"] || "",
-    //     job_link: xpathData["job-link"] || "",
-    //     playwright: xpathData["playwright"] === "true" || false, // stored as string? → convert to boolean
-    //     playwright_selector: xpathData["playwright-selector"] || ""
-    //   };
-
-    //   console.log("🚀 Sending payload:", payload);
-
-    //   fetch("http://45.63.119.16/generate-spider", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify(payload)
-    //   })
-    //     .then((res) => res.json())
-    //     .then((result) => {
-    //       console.log("✅ API Response:", result);
-    //       alert("Spider generated successfully!");
-    //       clearFields(); // optional → reset after send
-    //     })
-    //     .catch((err) => {
-    //       console.error("❌ API Error:", err);
-    //       alert("Failed to generate spider. Check console.");
-    //     });
-    // });
-
     //v.2 - via background.js
     chrome.storage.local.get(null, (data) => {
-      // chrome.runtime.sendMessage({
-      //   action: "sendToAPI",
-      //   payload: data
-      // });
+      if (data.playwright !== undefined) {
+          data.playwright = data.playwright === true || data.playwright === 'true';
+      }
+      console.log("Sending data to background:", data);
       chrome.runtime.sendMessage(
         { action: "sendToAPI", payload: data },
         (response) => {
@@ -350,6 +338,8 @@ if (!window.__xPathCopierInjected) {
             alert(response.error || "Failed to send data");
           } else {
             alert("Spider generated successfully!");
+            console.log("response: ", response.data.spider_code);
+            showPythonCode(response.data.spider_code);
             clearFields();
           }
         }
@@ -363,12 +353,111 @@ if (!window.__xPathCopierInjected) {
       'job-location', 'job-content', 'source-country', 'lang-code',
       'job-link', 'playwright-selector', 'playwright'];
     fields.forEach(field => {
-      const input = document.querySelector(`#xpath-${field}`);
-      if (input) {
-        input.value = '';
-      }
-      // saveToStorage(field, '');
-      chrome.storage.local.set({ xpathData: {} });
+      if (field === 'playwright') {
+            // Reset radio buttons
+           const falseRadio = document.querySelector('input[name="playwright"][value="false"]');
+            if (falseRadio) {
+                falseRadio.checked = true;
+            }
+            togglePlaywrightSelector(false);
+            saveToStorage(field, false);
+        } else {
+          const input = document.querySelector(`#xpath-${field}`);
+          if (input) {
+            input.value = '';
+          }
+          // saveToStorage(field, '');
+          chrome.storage.local.set({ xpathData: {} });
+        }
     });
   }
+
+  function showPythonCode(code) {
+    // Remove existing code editor if any
+    const existingEditor = document.getElementById('python-code-editor');
+    if (existingEditor) {
+        existingEditor.remove();
+    }
+
+    // Create code editor container
+    const codeEditor = document.createElement('div');
+    codeEditor.id = 'python-code-editor';
+    codeEditor.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        height: 80%;
+        background: #2d2d2d;
+        border: 2px solid #444;
+        border-radius: 10px;
+        z-index: 1000000;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        display: flex;
+        flex-direction: column;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    `;
+
+    // Create header with title and close button
+    codeEditor.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #333; border-bottom: 1px solid #444;">
+            <h3 style="margin: 0; color: #fff; font-size: 18px;">Generated Python Spider Code</h3>
+            <button id="close-code-editor" style="background: #ff4757; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                Close
+            </button>
+        </div>
+        <pre style="flex: 1; margin: 0; padding: 20px; overflow: auto; background: #1e1e1e; color: #d4d4d4; font-size: 14px; line-height: 1.5; white-space: pre-wrap;">${escapeHtml(code)}</pre>
+        <div style="padding: 15px; background: #333; border-top: 1px solid #444; display: flex; gap: 10px;">
+            <button id="copy-code" style="background: #4caf50; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                Copy Code
+            </button>
+            <button id="download-code" style="background: #2196f3; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                Download
+            </button>
+        </div>
+    `;
+
+
+    document.body.appendChild(codeEditor);
+
+    // Add event listeners
+    document.getElementById('close-code-editor').addEventListener('click', () => {
+        codeEditor.remove();
+    });
+
+    document.getElementById('copy-code').addEventListener('click', () => {
+        navigator.clipboard.writeText(code).then(() => {
+            alert('Code copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+        });
+    });
+
+    document.getElementById('download-code').addEventListener('click', () => {
+        downloadFile(code, 'spider.py', 'text/python');
+    });
+  }
+
+  // Helper function to escape HTML
+  function escapeHtml(unsafe) {
+      return unsafe
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+  }
+
+  // Helper function to download file
+  function downloadFile(content, fileName, contentType) {
+      const blob = new Blob([content], { type: contentType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+  }
+
 }
