@@ -523,10 +523,14 @@ if (!window.__xPathCopierInjected) {
             input.value = '';
           }
           // saveToStorage(field, '');
-          chrome.storage.local.set({ xpathData: {} });
+          // chrome.storage.local.set({ xpathData: {} });
+          chrome.storage.local.clear(() => {
+              console.log("All storage cleared");
+          });
         }
     });
     currentSpiderCode = null;
+    currentJsonConfig = null;
     toggleViewCodeButton(false);
   }
 
