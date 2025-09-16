@@ -3,12 +3,14 @@ chrome.runtime.onInstalled.addListener(() => {
   // parent
   chrome.contextMenus.create({
     id: "copy-xpath",
-    title: "Jobdesk Datafarm Spider Plugin",
+    // title: "Jobdesk Datafarm Spider Plugin",
+    title: "Get XPath for",
     contexts: ["all"]
   });
 
   // children
-  const fields = ["Start URL", "Company Name", "Company Logo", "Job Title", "Job Location", "Job Content", "Source Country", "Lang Code", "Job Link", "Playwright Selector", "Playwright"];
+  // const fields = ["Start URL", "Company Name", "Company Logo", "Job Title", "Job Location", "Job Content", "Source Country", "Lang Code", "Job Link", "Playwright Selector", "Playwright"];
+  const fields = ["Job Link", "Job Title", "Job Location", "Job Content"];
   fields.forEach(field => {
     chrome.contextMenus.create({
       id: field.toLowerCase().replace(/\s+/g, "-"),

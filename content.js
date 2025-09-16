@@ -3,6 +3,8 @@ if (!window.__xPathCopierInjected) {
   window.__xPathCopierInjected = true;
   let lastRightClickedElement = null;
   let isSidebarExpanded = false;
+  let currentSpiderCode = null;
+  let currentJsonConfig = null;
 
   // Load saved data from storage
   chrome.storage.local.get(['xpathData', 'sidebarState'], (result) => {
@@ -109,7 +111,10 @@ if (!window.__xPathCopierInjected) {
       <div style="position: sticky; top: 0; background: #fff; padding: 10px 15px; z-index: 10;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <h3 style="margin:0; font-size: 20px; font-weight: bold; color: #000">XPath Collector</h3>
-          <button id="close-sidebar" style="background: none; border: none; cursor: pointer; font-size: 20px; width: 30px; height:30px; padding: 0">
+            <button id="view-code-btn" style="display: none; background: #2196f3; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">
+              View Code
+            </button>
+          <button id="close-sidebar" style="background: none; border: none; cursor: pointer; font-size: 20px; width: 30px; height:30px; padding: 0; color: #000">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" color: #000; xmlns="http://www.w3.org/2000/svg">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
@@ -220,6 +225,21 @@ if (!window.__xPathCopierInjected) {
         saveToStorage(fieldId, e.target.value);
       });
     });  
+
+    document.getElementById("view-code-btn").addEventListener("click", () => {
+      if (currentSpiderCode || currentJsonConfig) {
+          showPythonCode(currentSpiderCode, currentJsonConfig);
+      }
+    });
+  }
+
+  function toggleViewCodeButton(show) {
+      const viewCodeBtn = document.getElementById('view-code-btn');
+      if (viewCodeBtn) {
+          viewCodeBtn.style.display = show ? 'block' : 'none';
+          console.log("View Code button visibility:", show);
+          
+      }
   }
 
   function togglePlaywrightSelector(show) {
@@ -277,7 +297,7 @@ if (!window.__xPathCopierInjected) {
     chrome.storage.local.set({ sidebarState: false });
   }
 
-  function openSidebar() {
+  function openSidebar() {  
     const sidebar = document.getElementById("xpath-sidebar");
     const openButton = document.getElementById("xpath-open-button");
 
@@ -325,7 +345,6 @@ if (!window.__xPathCopierInjected) {
   }
 
   function sendXPaths() {
-    //v.2 - via background.js
     chrome.storage.local.get(null, (data) => {
       if (data.playwright !== undefined) {
           data.playwright = data.playwright === true || data.playwright === 'true';
@@ -339,40 +358,20 @@ if (!window.__xPathCopierInjected) {
           } else {
             alert("Spider generated successfully!");
             console.log("response: ", response.data.spider_code);
-            showPythonCode(response.data.spider_code);
-            clearFields();
+            // showPythonCode(response.data.spider_code);
+            showPythonCode(response.data.spider_code, response.data.config);
+            toggleViewCodeButton(true);
+            // clearFields();
           }
         }
       );
     });
   }
 
-  function clearFields() {
-    console.log("Clearing fields...");
-    const fields = ['start-url', 'company-name', 'company-logo', 'job-title',
-      'job-location', 'job-content', 'source-country', 'lang-code',
-      'job-link', 'playwright-selector', 'playwright'];
-    fields.forEach(field => {
-      if (field === 'playwright') {
-            // Reset radio buttons
-           const falseRadio = document.querySelector('input[name="playwright"][value="false"]');
-            if (falseRadio) {
-                falseRadio.checked = true;
-            }
-            togglePlaywrightSelector(false);
-            saveToStorage(field, false);
-        } else {
-          const input = document.querySelector(`#xpath-${field}`);
-          if (input) {
-            input.value = '';
-          }
-          // saveToStorage(field, '');
-          chrome.storage.local.set({ xpathData: {} });
-        }
-    });
-  }
+  function showPythonCode(code, jsonConfig) {
+    currentSpiderCode = code;
+    currentJsonConfig = jsonConfig;
 
-  function showPythonCode(code) {
     // Remove existing code editor if any
     const existingEditor = document.getElementById('python-code-editor');
     if (existingEditor) {
@@ -399,15 +398,27 @@ if (!window.__xPathCopierInjected) {
         font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     `;
 
-    // Create header with title and close button
+    // Create header with tabs and close button
     codeEditor.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #333; border-bottom: 1px solid #444;">
-            <h3 style="margin: 0; color: #fff; font-size: 18px;">Generated Python Spider Code</h3>
+            <div style="display: flex; gap: 10px;">
+                <button id="tab-spider" class="tab-button active" style="background: #4caf50; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                    Spider Code
+                </button>
+                <button id="tab-json" class="tab-button" style="background: #666; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                    JSON Config
+                </button>
+            </div>
             <button id="close-code-editor" style="background: #ff4757; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px;">
                 Close
             </button>
         </div>
-        <pre style="flex: 1; margin: 0; padding: 20px; overflow: auto; background: #1e1e1e; color: #d4d4d4; font-size: 14px; line-height: 1.5; white-space: pre-wrap;">${escapeHtml(code)}</pre>
+        
+        <div id="tab-content" style="flex: 1; overflow: auto; background: #1e1e1e;">
+            <pre id="python-content" style="margin: 0; padding: 20px; color: #d4d4d4; font-size: 14px; line-height: 1.5; white-space: pre-wrap; display: block;">${escapeHtml(code)}</pre>
+            <pre id="json-content" style="margin: 0; padding: 20px; color: #d4d4d4; font-size: 14px; line-height: 1.5; white-space: pre-wrap; display: none;">${escapeHtml(JSON.stringify(jsonConfig, null, 2))}</pre>
+        </div>
+        
         <div style="padding: 15px; background: #333; border-top: 1px solid #444; display: flex; gap: 10px;">
             <button id="copy-code" style="background: #4caf50; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px;">
                 Copy Code
@@ -418,28 +429,61 @@ if (!window.__xPathCopierInjected) {
         </div>
     `;
 
-
     document.body.appendChild(codeEditor);
+
+    // Tab functionality
+    const tabSpider = document.getElementById('tab-spider');
+    const tabJson = document.getElementById('tab-json');
+    const pythonContent = document.getElementById('python-content');
+    const jsonContent = document.getElementById('json-content');
+    const copyButton = document.getElementById('copy-code');
+    const downloadButton = document.getElementById('download-code');
+
+    let currentTab = 'spider';
+    let currentContent = code;
+
+    tabSpider.addEventListener('click', () => {
+        if (currentTab !== 'spider') {
+            currentTab = 'spider';
+            currentContent = code;
+            tabSpider.style.background = '#4caf50';
+            tabJson.style.background = '#666';
+            pythonContent.style.display = 'block';
+            jsonContent.style.display = 'none';
+        }
+    });
+
+    tabJson.addEventListener('click', () => {
+        if (currentTab !== 'json') {
+            currentTab = 'json';
+            currentContent = JSON.stringify(jsonConfig, null, 2);
+            tabSpider.style.background = '#666';
+            tabJson.style.background = '#4caf50';
+            pythonContent.style.display = 'none';
+            jsonContent.style.display = 'block';
+        }
+    });
 
     // Add event listeners
     document.getElementById('close-code-editor').addEventListener('click', () => {
         codeEditor.remove();
     });
 
-    document.getElementById('copy-code').addEventListener('click', () => {
-        navigator.clipboard.writeText(code).then(() => {
-            alert('Code copied to clipboard!');
+    copyButton.addEventListener('click', () => {
+        navigator.clipboard.writeText(currentContent).then(() => {
+            alert(`${currentTab === 'spider' ? 'Code' : 'Config'} copied to clipboard!`);
         }).catch(err => {
             console.error('Failed to copy:', err);
         });
     });
 
-    document.getElementById('download-code').addEventListener('click', () => {
-        downloadFile(code, 'spider.py', 'text/python');
+    downloadButton.addEventListener('click', () => {
+        const fileName = currentTab === 'spider' ? 'spider.py' : 'config.json';
+        const contentType = currentTab === 'spider' ? 'text/python' : 'application/json';
+        downloadFile(currentContent, fileName, contentType);
     });
   }
 
-  // Helper function to escape HTML
   function escapeHtml(unsafe) {
       return unsafe
           .replace(/&/g, "&amp;")
@@ -449,7 +493,6 @@ if (!window.__xPathCopierInjected) {
           .replace(/'/g, "&#039;");
   }
 
-  // Helper function to download file
   function downloadFile(content, fileName, contentType) {
       const blob = new Blob([content], { type: contentType });
       const url = URL.createObjectURL(blob);
@@ -458,6 +501,33 @@ if (!window.__xPathCopierInjected) {
       a.download = fileName;
       a.click();
       URL.revokeObjectURL(url);
+  }
+
+  function clearFields() {
+    console.log("Clearing fields...");
+    const fields = ['start-url', 'company-name', 'company-logo', 'job-title',
+      'job-location', 'job-content', 'source-country', 'lang-code',
+      'job-link', 'playwright-selector', 'playwright'];
+    fields.forEach(field => {
+      if (field === 'playwright') {
+            // Reset radio buttons
+           const falseRadio = document.querySelector('input[name="playwright"][value="false"]');
+            if (falseRadio) {
+                falseRadio.checked = true;
+            }
+            togglePlaywrightSelector(false);
+            saveToStorage(field, false);
+        } else {
+          const input = document.querySelector(`#xpath-${field}`);
+          if (input) {
+            input.value = '';
+          }
+          // saveToStorage(field, '');
+          chrome.storage.local.set({ xpathData: {} });
+        }
+    });
+    currentSpiderCode = null;
+    toggleViewCodeButton(false);
   }
 
 }
