@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "XPath Copier",
+  "name": "Jobdesk Spider Plugin",
   "version": "1.0",
-  "description": "Copy XPath of elements from the context menu",
+  "description": "Create job spider automatically using XPath Copier Extension",
   "permissions": ["activeTab", "scripting", "storage", "clipboardWrite", "contextMenus"],
   "background": {
     "service_worker": "background.js"
@@ -16,7 +16,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "XPath Copier"
+    "default_title": "Jobdesk Spider"
   },
   "icons": {
     "16": "logo.png",

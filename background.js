@@ -3,7 +3,6 @@ chrome.runtime.onInstalled.addListener(() => {
   // parent
   chrome.contextMenus.create({
     id: "copy-xpath",
-    // title: "Jobdesk Datafarm Spider Plugin",
     title: "Get XPath for",
     contexts: ["all"]
   });
@@ -33,10 +32,23 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 // handle clicks
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  // send which child menu was clicked
-  chrome.tabs.sendMessage(tab.id, {
-    action: "copyXPath",
-    field: info.menuItemId // e.g. "job-title"
+  // Check authentication first
+  chrome.storage.local.get(['isAuthenticated'], (result) => {
+    if (!result.isAuthenticated) {
+      // Inject auth UI instead of processing the click
+      chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        // function: showAuthNotification
+        function: toggleAuthUI
+      });
+      return;
+    }
+    
+    // send which child menu was clicked
+    chrome.tabs.sendMessage(tab.id, {
+      action: "copyXPath",
+      field: info.menuItemId // e.g. "job-title"
+    });
   });
 });
 
@@ -88,3 +100,30 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   })();
   return true;
 });
+
+function showAuthNotification() {
+  // Show a small notification that auth is required
+  const notification = document.createElement("div");
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #ff4757;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    z-index: 1000000;
+    font-family: Arial, sans-serif;
+  `;
+  notification.textContent = "Please authenticate to use this feature";
+  document.body.appendChild(notification);
+  
+  setTimeout(() => notification.remove(), 3000);
+}
+
+function toggleAuthUI() {
+  // Trigger the toggle function that already exists in content.js
+  if (typeof toggleUI === 'function') {
+    toggleUI();
+  }
+}
