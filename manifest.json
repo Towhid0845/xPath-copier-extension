@@ -3,9 +3,12 @@
   "name": "Jobdesk Spider Plugin",
   "version": "1.0",
   "description": "Create job spider automatically using XPath Copier Extension",
-  "permissions": ["activeTab", "scripting", "storage", "clipboardWrite", "contextMenus"],
+  "permissions": ["activeTab", "scripting", "storage", "clipboardWrite", "contextMenus", "sidePanel"],
   "background": {
     "service_worker": "background.js"
+  },
+  "side_panel": { 
+    "default_path": "sidepanel.html"
   },
   "content_scripts": [
     {

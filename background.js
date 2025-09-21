@@ -1,26 +1,38 @@
-
+// Side Panel initialization
 chrome.runtime.onInstalled.addListener(() => {
-  // parent
-  chrome.contextMenus.create({
-    id: "copy-xpath",
-    title: "Get XPath for",
-    contexts: ["all"]
-  });
-
-  // children
-  // const fields = ["Start URL", "Company Name", "Company Logo", "Job Title", "Job Location", "Job Content", "Source Country", "Lang Code", "Job Link", "Playwright Selector", "Playwright"];
-  const fields = ["Job Link", "Job Title", "Job Location", "Job Content"];
-  fields.forEach(field => {
-    chrome.contextMenus.create({
-      id: field.toLowerCase().replace(/\s+/g, "-"),
-      parentId: "copy-xpath",
-      title: field,
-      contexts: ["all"]
-    });
-  });
+  // Set up side panel behavior
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
+    .catch(err => console.log('Side panel not available:', err));
+  
+  // Create context menus
+  createContextMenus();
 });
 
-// ensure content.js is injected
+// Create context menus
+function createContextMenus() {
+  // Remove existing menus first to avoid duplicates
+  chrome.contextMenus.removeAll(() => {
+    // Parent menu
+    chrome.contextMenus.create({
+      id: "copy-xpath",
+      title: "Get XPath for",
+      contexts: ["all"]
+    });
+
+    // Children menus
+    const fields = ["Job Link", "Job Title", "Job Location", "Job Content"];
+    fields.forEach(field => {
+      chrome.contextMenus.create({
+        id: field.toLowerCase().replace(/\s+/g, "-"),
+        parentId: "copy-xpath",
+        title: field,
+        contexts: ["all"]
+      });
+    });
+  });
+}
+
+// Ensure content.js is injected
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === "complete" && /^https?:/.test(tab.url)) {
     chrome.scripting.executeScript({
@@ -30,21 +42,17 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
-// handle clicks
+// Handle context menu clicks
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   // Check authentication first
   chrome.storage.local.get(['isAuthenticated'], (result) => {
     if (!result.isAuthenticated) {
-      // Inject auth UI instead of processing the click
-      chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        // function: showAuthNotification
-        function: toggleAuthUI
-      });
+      // Open side panel for authentication
+      openSidePanelForAuth();
       return;
     }
     
-    // send which child menu was clicked
+    // User is authenticated - send XPath copy message
     chrome.tabs.sendMessage(tab.id, {
       action: "copyXPath",
       field: info.menuItemId // e.g. "job-title"
@@ -52,10 +60,71 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   });
 });
 
+// Open side panel for authentication
+function openSidePanelForAuth() {
+  chrome.sidePanel.open({ windowId: chrome.windows.WINDOW_ID_CURRENT })
+    .then(() => {
+      console.log('Side panel opened for authentication');
+    })
+    .catch(err => {
+      console.log('Could not open side panel:', err);
+      // Fallback: show notification
+      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        if (tabs[0]?.id) {
+          chrome.scripting.executeScript({
+            target: { tabId: tabs[0].id },
+            function: showAuthNotification
+          });
+        }
+      });
+    });
+}
 
+// Handle messages from side panel and content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action !== "sendToAPI") return false;
-  const data = message.payload.xpathData || {};
+  switch (message.action) {
+    case "sendToAPI":
+      handleSendToAPI(message, sendResponse);
+      return true; // Keep channel open for async response
+      
+    case "openSidePanel":
+      chrome.windows.getCurrent((window) => {
+        if (chrome.runtime.lastError) {
+          console.error('Error getting current window:', chrome.runtime.lastError);
+          sendResponse({ success: false, error: 'Cannot access current window' });
+          return;
+        }
+        
+        chrome.sidePanel.open({ windowId: window.id })
+          .then(() => {
+            sendResponse({ success: true });
+          })
+          .catch(err => {
+            console.error('Failed to open side panel:', err);
+            sendResponse({ success: false, error: err.message });
+          });
+      });
+      return true;
+      
+    case "closeSidePanel":
+      chrome.sidePanel.close({ windowId: chrome.windows.WINDOW_ID_CURRENT });
+      sendResponse({ success: true });
+      break;
+      
+    case "checkAuthStatus":
+      chrome.storage.local.get(['isAuthenticated'], (result) => {
+        sendResponse({ isAuthenticated: result.isAuthenticated || false });
+      });
+      return true; // Keep channel open for async response
+      
+    default:
+      return false;
+  }
+});
+
+// Handle API requests
+async function handleSendToAPI(message, sendResponse) {
+  const data = message.payload || {};
   
   const payload = {
     start_url: data["start-url"] || "",
@@ -71,38 +140,38 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     playwright_selector: data["playwright-selector"] || ""
   };
   
-  console.log("📤 Sending to API:", data);
-  const allEmpty = Object.values(payload).every(
-    (val) => val === "" || val === false
-  );
-
+  console.log("📤 Sending to API:", payload);
+  
+  // Check if all fields are empty
+  const allEmpty = Object.values(payload).every(val => val === "" || val === false);
   if (allEmpty) {
     console.warn("🚫 Empty form, not sending to API");
     sendResponse({ success: false, error: "Form is empty. Please fill in fields before sending." });
-    return true;
+    return;
   }
 
-    (async () => {
-      try {
-        const response = await fetch("http://45.63.119.16/generate-spider", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        
-        const result = await response.json();
-        console.log("✅ API Response:", result);
-        sendResponse({ success: true, data: result });
-      } catch (err) {
-        console.error("❌ API Error:", err);
-        sendResponse({ success: false, error: err.message || "API request failed" });
-      }
-  })();
-  return true;
-});
+  try {
+    const response = await fetch("http://45.63.119.16/generate-spider", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    console.log("✅ API Response:", result);
+    sendResponse({ success: true, data: result });
+  } catch (err) {
+    console.error("❌ API Error:", err);
+    sendResponse({ success: false, error: err.message || "API request failed" });
+  }
+}
 
+// Fallback notification function
 function showAuthNotification() {
-  // Show a small notification that auth is required
   const notification = document.createElement("div");
   notification.style.cssText = `
     position: fixed;
@@ -110,20 +179,36 @@ function showAuthNotification() {
     right: 20px;
     background: #ff4757;
     color: white;
-    padding: 10px 15px;
-    border-radius: 5px;
+    padding: 12px 16px;
+    border-radius: 6px;
     z-index: 1000000;
     font-family: Arial, sans-serif;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   `;
-  notification.textContent = "Please authenticate to use this feature";
+  notification.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span>🔐</span>
+      <span>Please authenticate in the side panel to use this feature</span>
+    </div>
+  `;
+  
   document.body.appendChild(notification);
   
-  setTimeout(() => notification.remove(), 3000);
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.parentNode.removeChild(notification);
+    }
+  }, 5000);
 }
 
-function toggleAuthUI() {
-  // Trigger the toggle function that already exists in content.js
-  if (typeof toggleUI === 'function') {
-    toggleUI();
-  }
-}
+// Listen for tab changes to update context menus
+chrome.tabs.onActivated.addListener(() => {
+  // Recreate context menus when tab changes
+  createContextMenus();
+});
+
+// Optional: Handle extension icon click
+chrome.action.onClicked.addListener((tab) => {
+  chrome.sidePanel.open({ windowId: chrome.windows.WINDOW_ID_CURRENT });
+});

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Jobdesk Spider</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Auth UI Styles */
+        #auth-ui {
+            display: none;
+        }
+
+        .auth-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .auth-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .auth-links {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .auth-link {
+            color: #007bff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .auth-link:hover {
+            text-decoration: underline;
+        }
+
+        /* XPath Form Styles */
+        #xpath-ui {
+            display: none;
+        }
+
+        .xpath-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .field-group {
+            margin-bottom: 15px;
+        }
+
+        .field-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .field-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .field-group input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* OTP Styles */
+        #otp-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .otp-input {
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            font-size: 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+        }
+
+        .otp-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        /* Success Styles */
+        .success-container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-icon {
+            font-size: 48px;
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+
+        /* Loading State */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            .auth-container,
+            .xpath-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Authentication UI -->
+        <div id="auth-ui">
+            <div class="auth-container">
+                <h2 class="auth-title">🔐 Welcome to Jobdesk Spider</h2>
+
+                <!-- Login Form -->
+                <div id="login-form">
+                    <div class="auth-form">
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" placeholder="Enter your email">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" placeholder="Enter your password">
+                        </div>
+                        <button class="btn btn-primary" id="login-btn">Sign In</button>
+                    </div>
+                    <div class="auth-links">
+                        <a class="auth-link" id="show-forgot">Forgot Password?</a>
+                    </div>
+                </div>
+
+                <!-- Forgot Password Form -->
+                <div id="forgot-form" style="display: none;">
+                    <div class="auth-form">
+                        <div class="form-group">
+                            <label for="reset-email">Email Address</label>
+                            <input type="email" id="reset-email" placeholder="Enter your email">
+                        </div>
+                        <button class="btn btn-primary" id="forgot-btn">Send Reset Link</button>
+                    </div>
+                    <div class="auth-links">
+                        <a class="auth-link" id="show-login">Back to Sign In</a>
+                    </div>
+                </div>
+
+                <!-- 2FA Verification -->
+                <div id="verify-form" style="display: none;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <p>Enter the 6-digit code sent to your email</p>
+                    </div>
+                    <div id="otp-container">
+                        <input type="text" maxlength="1" class="otp-input">
+                        <input type="text" maxlength="1" class="otp-input">
+                        <input type="text" maxlength="1" class="otp-input">
+                        <input type="text" maxlength="1" class="otp-input">
+                        <input type="text" maxlength="1" class="otp-input">
+                        <input type="text" maxlength="1" class="otp-input">
+                    </div>
+                    <button class="btn btn-primary" id="verify-btn" style="width: 100%;">Verify Code</button>
+                    <div class="auth-links">
+                        <a class="auth-link" id="resend-btn">Resend Code</a> •
+                        <a class="auth-link" id="show-login">Back to Sign In</a>
+                    </div>
+                </div>
+
+                <!-- Success Screen -->
+                <div id="success-form" style="display: none;">
+                    <div class="success-container">
+                        <div class="success-icon">✅</div>
+                        <h3>Authentication Successful!</h3>
+                        <p>You can now use Jobdesk Spider features</p>
+                        <button class="btn btn-primary" id="success-btn">Get Started</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- XPath Form UI -->
+        <div id="xpath-ui">
+            <div class="xpath-container">
+                <div class="field-group">
+                    <label for="xpath-start-url">Start URL</label>
+                    <input type="text" id="xpath-start-url">
+                </div>
+                <div class="field-group">
+                    <label for="xpath-company-name">Company Name</label>
+                    <input type="text" id="xpath-company-name">
+                </div>
+                <div class="field-group">
+                    <label for="xpath-company-logo">Company Logo</label>
+                    <input type="text" id="xpath-company-logo">
+                </div>
+                <div class="field-group">
+                    <label for="xpath-source-country">Source Country</label>
+                    <input type="text" id="xpath-source-country">
+                </div>
+                <div class="field-group">
+                    <label for="xpath-lang-code">Lang Code</label>
+                    <input type="text" id="xpath-lang-code">
+                </div>
+                <div class="field-group">
+                    <label for="xpath-job-link">Job Link</label>
+                    <input type="text" id="xpath-job-link">
+                </div>
+                <div class="field-group">
+                    <label for="xpath-job-title">Job Title</label>
+                    <input type="text" id="xpath-job-title">
+                </div>
+                <div class="field-group">
+                    <label for="xpath-job-location">Job Location</label>
+                    <input type="text" id="xpath-job-location">
+                </div>
+                <div class="field-group">
+                    <label for="xpath-job-content">Job Content</label>
+                    <input type="text" id="xpath-job-content">
+                </div>
+                <div class="field-group">
+                    <label>Playwright</label>
+                    <div style="display: flex; gap: 15px; margin-top: 5px;">
+                        <label style="display: flex; gap: 10px; align-items: center;"><input type="radio" name="playwright" value="true"> Yes</label>
+                        <label style="display: flex; gap: 10px; align-items: center;"><input type="radio" name="playwright" value="false" checked> No</label>
+                    </div>
+                </div>
+                <div id="playwright-selector-container" style="display: none; margin-bottom: 15px;">
+                    <div class="field-group">
+                        <label for="xpath-playwright-selector">Playwright Selector</label>
+                        <input type="text" id="xpath-playwright-selector" placeholder="Enter playwright selector">
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="generate-btn">Generate</button>
+                    <button class="btn btn-secondary" id="edit-btn" style="display: none;">Edit Code</button>
+                    <button class="btn btn-secondary" id="clear-btn">Clear All</button>
+                    <button class="btn btn-primary" id="publish-btn">Publish</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Editor UI -->
+        <div id="editor-ui" style="display: none;">
+            <div style="padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Generated Spider Code</h3>
+                    <button id="back-to-form-btn"
+                        style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                        ← Back to Form
+                    </button>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button id="tab-spider" class="tab-button active"
+                        style="background: #4caf50; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                        Spider Code
+                    </button>
+                    <button id="tab-json" class="tab-button"
+                        style="background: #666; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                        JSON Config
+                    </button>
+                </div>
+
+                <div style="background: #2d2d2d; border-radius: 8px; overflow: hidden;">
+                    <pre id="python-content"
+                        style="margin: 0; padding: 20px; color: #d4d4d4; font-size: 13px; line-height: 1.5; white-space: pre-wrap; display: block; max-height: 60vh; overflow: auto; font-family: 'Monaco', 'Menlo', monospace;"></pre>
+                    <pre id="json-content"
+                        style="margin: 0; padding: 20px; color: #d4d4d4; font-size: 13px; line-height: 1.5; white-space: pre-wrap; display: none; max-height: 60vh; overflow: auto; font-family: 'Monaco', 'Menlo', monospace;"></pre>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button id="copy-code-btn"
+                        style="background: #4caf50; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; flex: 1;">
+                        Copy Code
+                    </button>
+                    <button id="download-code-btn"
+                        style="background: #2196f3; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; flex: 1;">
+                        Download
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="sidepanel.js"></script>
+</body>
+
+</html>
