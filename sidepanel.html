@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Jobdesk Spider</title>
+    <title>jobdesk Spider</title>
     <style>
         * {
             margin: 0;
@@ -77,31 +77,61 @@
         }
 
         .btn {
-            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 20px;
             border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
+            border-radius: 20px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:active {
+            transform: translateY(0);
         }
 
         .btn-primary {
-            background: #007bff;
+            background: linear-gradient(135deg, #4776E6 0%, #8E54E9 100%);
             color: white;
-        }
-
-        .btn-primary:hover {
-            background: #0056b3;
+            border: none;
         }
 
         .btn-secondary {
-            background: #6c757d;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
             color: white;
+            border: none;
         }
 
-        .btn-secondary:hover {
-            background: #545b62;
+        .btn-warning {
+            background: linear-gradient(135deg, #ffb500 0%, #ce8312 100%);
+            color: #ffffff;
+            border: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #06D6A0 0%, #1B9AAA 100%);
+            color: white;
+            border: none;
+        }
+        .btn:hover {
+            filter: brightness(0.95);
+            /* Subtle darken on hover */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            /* Subtle shadow on hover */
+            transition: all 0.2s ease-in-out;
+            /* Smooth transition for the effects */
+        }
+
+        .btn-icon {
+            font-size: 16px;
+        }
+
+        .btn-text {
+            white-space: nowrap;
         }
 
         .auth-links {
@@ -214,6 +244,34 @@
                 padding: 20px;
             }
         }
+
+        @media (max-width: 400px) {
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-text {
+                font-size: 13px;
+            }
+        }
+
+        #login-form,
+        #forgot-form,
+        #verify-form,
+        #success-form {
+            margin-top: 24px;
+        }
+
+        .sub-title {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #6c757d;
+            font-size: 16px;
+        }
+
+        #success-btn {
+            margin-top: 24px;
+        }
     </style>
 </head>
 
@@ -222,7 +280,8 @@
         <!-- Authentication UI -->
         <div id="auth-ui">
             <div class="auth-container">
-                <h2 class="auth-title">🔐 Welcome to Jobdesk Spider</h2>
+                <h2 class="auth-title">🔐 Authentication Required</h2>
+                <p class="sub-title">Please Authenticate to use the extension</p>
 
                 <!-- Login Form -->
                 <div id="login-form">
@@ -280,9 +339,9 @@
                 <div id="success-form" style="display: none;">
                     <div class="success-container">
                         <div class="success-icon">✅</div>
-                        <h3>Authentication Successful!</h3>
-                        <p>You can now use Jobdesk Spider features</p>
-                        <button class="btn btn-primary" id="success-btn">Get Started</button>
+                        <h2>Authentication Successful!</h3>
+                            <p class="sub-title">You can now use jobdesk Spider features</p>
+                            <button class="btn btn-primary" id="success-btn">Get Started</button>
                     </div>
                 </div>
             </div>
@@ -330,8 +389,10 @@
                 <div class="field-group">
                     <label>Playwright</label>
                     <div style="display: flex; gap: 15px; margin-top: 5px;">
-                        <label style="display: flex; gap: 10px; align-items: center;"><input type="radio" name="playwright" value="true"> Yes</label>
-                        <label style="display: flex; gap: 10px; align-items: center;"><input type="radio" name="playwright" value="false" checked> No</label>
+                        <label style="display: flex; gap: 10px; align-items: center;"><input type="radio"
+                                name="playwright" value="true"> Yes</label>
+                        <label style="display: flex; gap: 10px; align-items: center;"><input type="radio"
+                                name="playwright" value="false" checked> No</label>
                     </div>
                 </div>
                 <div id="playwright-selector-container" style="display: none; margin-bottom: 15px;">
@@ -341,10 +402,12 @@
                     </div>
                 </div>
                 <div class="action-buttons">
-                    <button class="btn btn-primary" id="generate-btn">Generate</button>
+                    <button class="btn btn-primary" id="generate-btn">
+                        Generate
+                    </button>
                     <button class="btn btn-secondary" id="edit-btn" style="display: none;">Edit Code</button>
-                    <button class="btn btn-secondary" id="clear-btn">Clear All</button>
-                    <button class="btn btn-primary" id="publish-btn">Publish</button>
+                    <button class="btn btn-warning" id="clear-btn">Clear All</button>
+                    <button class="btn btn-success" id="publish-btn">Publish</button>
                 </div>
             </div>
         </div>
@@ -355,8 +418,8 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3>Generated Spider Code</h3>
                     <button id="back-to-form-btn"
-                        style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-                        ← Back to Form
+                        style="background: #81c4ff; color: rgb(255, 255, 255); border: none; padding: 0px 15px 4px; border-radius: 30px; font-size: 24px; line-height: 24px; cursor: pointer;">
+                        ←
                     </button>
                 </div>
 

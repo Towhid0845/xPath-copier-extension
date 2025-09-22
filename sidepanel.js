@@ -190,7 +190,8 @@ function copyEditorContent() {
         // : document.getElementById('json-content').textContent;
     
     navigator.clipboard.writeText(content).then(() => {
-        alert(`${window.currentEditorTab === 'spider' ? 'Code' : 'Config'} copied to clipboard!`);
+        // alert(`${window.currentEditorTab === 'spider' ? 'Code' : 'Config'} copied to clipboard!`);
+        showQuickNotification('Code copied to clipboard!', 'success');
     });
 }
 
@@ -286,8 +287,6 @@ function moveToNext(input) {
 function handleLogin() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    alert('login clicked');
-    console.log(email, password);
     
     if (!email || !password) {
         alert('Please fill in all fields');
@@ -339,6 +338,7 @@ function resendCode() {
 }
 
 function loadXPathUI() {
+    showQuickNotification('Authentication successful!', 'success');
     showXPathUI();
 }
 
@@ -389,21 +389,24 @@ function sendXPaths() {
         payload: formData
     }, function(response) {
         if (response.success) {
+            showQuickNotification('Spider generated successfully!', 'success');
             currentSpiderCode = response.data.spider_code;
             currentJsonConfig = response.data.config;
             toggleEditButton(true);
             // alert('Spider generated successfully!');
             saveGeneratedCode(currentSpiderCode, currentJsonConfig);
             showPythonCode(response.data.spider_code, response.data.config);
+
             // clearFields();
         } else {
-            alert('Error: ' + response.error);
+            showQuickNotification('Error: ' + response.error, 'info');
             toggleEditButton(false);
         }
     });
 }
 
 function clearFields() {
+    // showQuickNotification('Clearing all fields...', 'info');
     // Clear all form fields
     document.getElementById('xpath-start-url').value = '';
     document.getElementById('xpath-company-name').value = '';
@@ -427,7 +430,10 @@ function clearFields() {
         lastSpiderCode: null,
         lastJsonConfig: null 
     });
-    showNotification('All fields and data cleared successfully!', null, 'success');
+    // showNotification('All fields and data cleared successfully!', null, 'success');
+    setTimeout(() => {
+        showQuickNotification('All data cleared successfully!', 'success');
+    }, 500);
 }
 
 // Logout functionality
@@ -492,92 +498,6 @@ function addLogoutButton() {
     }
 }
 
-// Add to sidepanel.js
-// function showPythonCode(code, jsonConfig) {
-//     // Create code editor in the side panel instead of webpage
-//     const sidePanel = document.getElementById('xpath-ui');
-    
-//     // Clear existing content and show code editor
-//     sidePanel.innerHTML = `
-//         <div style="padding: 20px;">
-//             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-//                 <h3>Generated Spider Code</h3>
-//                 <button onclick="loadXPathUI()" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-//                     ← Back to Form
-//                 </button>
-//             </div>
-            
-//             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-//                 <button id="tab-spider" class="tab-button active" style="background: #4caf50; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-//                     Spider Code
-//                 </button>
-//                 <button id="tab-json" class="tab-button" style="background: #666; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-//                     JSON Config
-//                 </button>
-//             </div>
-            
-//             <div style="background: #2d2d2d; border-radius: 8px; overflow: hidden;">
-//                 <pre id="python-content" style="margin: 0; padding: 20px; color: #d4d4d4; font-size: 13px; line-height: 1.5; white-space: pre-wrap; display: block; max-height: 60vh; overflow: auto; font-family: 'Monaco', 'Menlo', monospace;">${escapeHtml(code)}</pre>
-//                 <pre id="json-content" style="margin: 0; padding: 20px; color: #d4d4d4; font-size: 13px; line-height: 1.5; white-space: pre-wrap; display: none; max-height: 60vh; overflow: auto; font-family: 'Monaco', 'Menlo', monospace;">${escapeHtml(JSON.stringify(jsonConfig, null, 2))}</pre>
-//             </div>
-            
-//             <div style="display: flex; gap: 10px; margin-top: 15px;">
-//                 <button onclick="copyCode()" style="background: #4caf50; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; flex: 1;">
-//                     Copy Code
-//                 </button>
-//                 <button onclick="downloadCode()" style="background: #2196f3; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; flex: 1;">
-//                     Download
-//                 </button>
-//             </div>
-//         </div>
-//     `;
-
-//     // Add tab functionality
-//     let currentTab = 'spider';
-//     let currentContent = code;
-
-//     document.getElementById('tab-spider').addEventListener('click', () => {
-//         if (currentTab !== 'spider') {
-//             currentTab = 'spider';
-//             currentContent = code;
-//             document.getElementById('tab-spider').style.background = '#4caf50';
-//             document.getElementById('tab-json').style.background = '#666';
-//             document.getElementById('python-content').style.display = 'block';
-//             document.getElementById('json-content').style.display = 'none';
-//         }
-//     });
-
-//     document.getElementById('tab-json').addEventListener('click', () => {
-//         if (currentTab !== 'json') {
-//             currentTab = 'json';
-//             currentContent = JSON.stringify(jsonConfig, null, 2);
-//             document.getElementById('tab-spider').style.background = '#666';
-//             document.getElementById('tab-json').style.background = '#4caf50';
-//             document.getElementById('python-content').style.display = 'none';
-//             document.getElementById('json-content').style.display = 'block';
-//         }
-//     });
-
-//     // Add helper functions
-//     window.copyCode = function() {
-//         navigator.clipboard.writeText(currentContent).then(() => {
-//             alert(`${currentTab === 'spider' ? 'Code' : 'Config'} copied to clipboard!`);
-//         });
-//     };
-
-//     window.downloadCode = function() {
-//         const fileName = currentTab === 'spider' ? 'spider.py' : 'config.json';
-//         const contentType = currentTab === 'spider' ? 'text/python' : 'application/json';
-//         const blob = new Blob([currentContent], { type: contentType });
-//         const url = URL.createObjectURL(blob);
-//         const a = document.createElement('a');
-//         a.href = url;
-//         a.download = fileName;
-//         a.click();
-//         URL.revokeObjectURL(url);
-//     };
-// }
-
 function showPythonCode(code, jsonConfig) {
     // Hide other UIs and show editor
     document.getElementById('auth-ui').style.display = 'none';
@@ -626,6 +546,82 @@ function togglePlaywrightSelector(show) {
         container.style.display = show ? 'block' : 'none';
     }
 }
+
+function showQuickNotification(message, type = 'success') {
+    const notification = document.createElement("div");
+    const bgColor = type === 'success' ? '#4caf50' : '#c7a253ff';
+    
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${bgColor};
+        color: white;
+        padding: 12px 16px;
+        border-radius: 6px;
+        z-index: 10000;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        animation: slideIn 0.3s ease;
+    `;
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span>${type === 'success' ? '☑️' : 'ℹ️'}</span>
+            <span>${message}</span>
+        </div>
+    `;
+   
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+    
+    // Click to dismiss immediately
+    notification.addEventListener('click', () => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    });
+}
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
 
 // Export functions for global access (if needed)
 window.showAuthForm = showAuthForm;
