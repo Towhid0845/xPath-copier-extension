@@ -28,7 +28,7 @@
   },
    "web_accessible_resources": [
     {
-      "resources": ["logo.svg"],
+      "resources": ["logo.svg", "codemirror/*"],
       "matches": ["<all_urls>"]
     }
   ]

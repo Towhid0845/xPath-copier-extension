@@ -3,15 +3,164 @@ let currentAuthState = 'login'; // login, forgot, verify, success
 let isAuthenticated = false;
 let currentSpiderCode = null;
 let currentJsonConfig = null;
+let pythonEditor = null;
+let jsonEditor = null;
 
 // Initialize the side panel
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initializePanel();
     loadAuthenticationState();
     initializeEventListeners();
-    initializeEditorListeners();
+    // initializeEditorListeners();
     loadStoredCode();
+    initializeTabs();
+    initializeButtons();
+    initializeEditors();
 });
+
+function initializeEditors() {
+    // Initialize Python editor
+    pythonEditor = CodeMirror.fromTextArea(document.getElementById('python-editor'), {
+        mode: 'python',
+        theme: 'dracula',
+        lineNumbers: true,
+        indentUnit: 4,
+        smartIndent: true,
+        tabSize: 4,
+        indentWithTabs: false,
+        electricChars: true,
+        lineWrapping: true,
+        matchBrackets: true,
+        autoCloseBrackets: true,
+        styleActiveLine: true,
+        viewportMargin: Infinity
+    });
+
+    // Initialize JSON editor
+    jsonEditor = CodeMirror.fromTextArea(document.getElementById('json-editor'), {
+        mode: 'javascript',
+        theme: 'dracula',
+        lineNumbers: true,
+        indentUnit: 2,
+        smartIndent: true,
+        tabSize: 2,
+        indentWithTabs: false,
+        electricChars: true,
+        lineWrapping: true,
+        matchBrackets: true,
+        autoCloseBrackets: true,
+        styleActiveLine: true,
+        viewportMargin: Infinity
+    });
+
+    // Hide JSON editor initially
+    document.getElementById('json-tab').classList.remove('active');
+
+    // Add cursor activity tracking
+    pythonEditor.on('cursorActivity', updateStatusBar);
+    jsonEditor.on('cursorActivity', updateStatusBar);
+}
+
+function updateStatusBar() {
+    const editor = getActiveEditor();
+    if (!editor) return;
+
+    const cursor = editor.getCursor();
+    document.getElementById('line-info').textContent = `Line: ${cursor.line + 1}, Column: ${cursor.ch + 1}`;
+    document.getElementById('mode-info').textContent = editor === pythonEditor ? 'Python' : 'JSON';
+}
+
+function getActiveEditor() {
+    const activeTab = document.querySelector('.tab-button.active').id;
+    return activeTab === 'tab-spider' ? pythonEditor : jsonEditor;
+}
+
+function initializeButtons() {
+    // Back button
+    document.getElementById('back-to-form-btn').addEventListener('click', function () {
+        // Hide editor and show form UI
+        document.getElementById('editor-ui').style.display = 'none';
+        document.getElementById('xpath-ui').style.display = 'block';
+    });
+
+    // Copy button
+    document.getElementById('copy-code-btn').addEventListener('click', function () {
+        const activeTab = document.querySelector('.tab-button.active').id;
+        let content = '';
+
+        if (activeTab === 'tab-spider' && pythonEditor) {
+            content = pythonEditor.getValue();
+        } else if (activeTab === 'tab-json' && jsonEditor) {
+            content = jsonEditor.getValue();
+        }
+
+        navigator.clipboard.writeText(content).then(function () {
+            showQuickNotification('Code copied to clipboard!', 'success');
+        }).catch(function (err) {
+            showQuickNotification('Failed to copy: ' + err, 'error');
+        });
+    });
+
+    // Download button
+    document.getElementById('download-code-btn').addEventListener('click', function () {
+        const activeTab = document.querySelector('.tab-button.active').id;
+        let content = '';
+        let filename = '';
+        let mimeType = '';
+
+        if (activeTab === 'tab-spider' && pythonEditor) {
+            content = pythonEditor.getValue();
+            filename = 'spider.py';
+            mimeType = 'text/x-python';
+        } else if (activeTab === 'tab-json' && jsonEditor) {
+            content = jsonEditor.getValue();
+            filename = 'config.json';
+            mimeType = 'application/json';
+        }
+
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+
+        setTimeout(function () {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showQuickNotification('File downloaded successfully!', 'success');
+        }, 100);
+    });
+}
+
+function initializeTabs() {
+    const tabSpider = document.getElementById('tab-spider');
+    const tabJson = document.getElementById('tab-json');
+
+    tabSpider.addEventListener('click', function () {
+        tabSpider.classList.add('active');
+        tabJson.classList.remove('active');
+        document.getElementById('python-tab').classList.add('active');
+        document.getElementById('json-tab').classList.remove('active');
+
+        // Refresh editor to properly render
+        setTimeout(() => pythonEditor.refresh(), 50);
+        updateStatusBar();
+    });
+
+    tabJson.addEventListener('click', function () {
+        tabJson.classList.add('active');
+        tabSpider.classList.remove('active');
+        document.getElementById('json-tab').classList.add('active');
+        document.getElementById('python-tab').classList.remove('active');
+
+        // Refresh editor to properly render
+        setTimeout(() => jsonEditor.refresh(), 50);
+        updateStatusBar();
+    });
+}
 
 // Initialize panel functionality
 function initializePanel() {
@@ -23,7 +172,7 @@ function initializePanel() {
     // Check for Enter key in auth forms
     const authInputs = document.querySelectorAll('#auth-ui input');
     authInputs.forEach(input => {
-        input.addEventListener('keypress', function(e) {
+        input.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 handleEnterKey();
             }
@@ -33,9 +182,9 @@ function initializePanel() {
 
 // Load authentication state from storage
 function loadAuthenticationState() {
-    chrome.storage.local.get(['isAuthenticated'], function(result) {
+    chrome.storage.local.get(['isAuthenticated'], function (result) {
         isAuthenticated = result.isAuthenticated || false;
-        
+
         if (isAuthenticated) {
             showXPathUI();
         } else {
@@ -70,7 +219,7 @@ function initializeEventListeners() {
 }
 
 function loadStoredCode() {
-    chrome.storage.local.get(['lastSpiderCode', 'lastJsonConfig'], function(result) {
+    chrome.storage.local.get(['lastSpiderCode', 'lastJsonConfig'], function (result) {
         if (result.lastSpiderCode && result.lastJsonConfig) {
             currentSpiderCode = result.lastSpiderCode;
             currentJsonConfig = result.lastJsonConfig;
@@ -115,7 +264,7 @@ function showEditorUI() {
 function initializePlaywrightListeners() {
     const playwrightRadios = document.querySelectorAll('input[name="playwright"]');
     playwrightRadios.forEach(radio => {
-        radio.addEventListener('change', function(e) {
+        radio.addEventListener('change', function (e) {
             togglePlaywrightSelector(e.target.value === 'true');
         });
     });
@@ -132,7 +281,7 @@ function initializeEditorListeners() {
     // Tab switching
     document.getElementById('tab-spider')?.addEventListener('click', switchToSpiderTab);
     document.getElementById('tab-json')?.addEventListener('click', switchToJsonTab);
-    
+
     // Editor actions
     document.getElementById('copy-code-btn')?.addEventListener('click', copyEditorContent);
     document.getElementById('download-code-btn')?.addEventListener('click', downloadEditorContent);
@@ -143,18 +292,18 @@ function initializeOTPListeners() {
     const otpContainer = document.getElementById('otp-container');
     if (otpContainer) {
         // Use event delegation for OTP inputs
-        otpContainer.addEventListener('input', function(e) {
+        otpContainer.addEventListener('input', function (e) {
             if (e.target.classList.contains('otp-input')) {
                 moveToNext(e.target);
             }
         });
-        
+
         // Also add paste handling for better UX
-        otpContainer.addEventListener('paste', function(e) {
+        otpContainer.addEventListener('paste', function (e) {
             e.preventDefault();
             const pastedData = e.clipboardData.getData('text').replace(/\D/g, ''); // Numbers only
             const otpInputs = Array.from(otpContainer.querySelectorAll('.otp-input'));
-            
+
             // Fill OTP inputs with pasted data
             for (let i = 0; i < Math.min(pastedData.length, otpInputs.length); i++) {
                 otpInputs[i].value = pastedData[i];
@@ -186,9 +335,9 @@ function switchToJsonTab() {
 
 function copyEditorContent() {
     const content = window.currentEditorTab === 'spider' ? window.currentEditorContent : window.currentJsonContent;
-        // ? document.getElementById('python-content').textContent
-        // : document.getElementById('json-content').textContent;
-    
+    // ? document.getElementById('python-content').textContent
+    // : document.getElementById('json-content').textContent;
+
     navigator.clipboard.writeText(content).then(() => {
         // alert(`${window.currentEditorTab === 'spider' ? 'Code' : 'Config'} copied to clipboard!`);
         showQuickNotification('Code copied to clipboard!', 'success');
@@ -197,12 +346,12 @@ function copyEditorContent() {
 
 function downloadEditorContent() {
     const content = window.currentEditorTab === 'spider' ? window.currentEditorContent : window.currentJsonContent;
-        // ? document.getElementById('python-content').textContent
-        // : document.getElementById('json-content').textContent;
-    
+    // ? document.getElementById('python-content').textContent
+    // : document.getElementById('json-content').textContent;
+
     const fileName = window.currentEditorTab === 'spider' ? 'spider.py' : 'config.json';
     const contentType = window.currentEditorTab === 'spider' ? 'text/python' : 'application/json';
-    
+
     const blob = new Blob([content], { type: contentType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -234,16 +383,16 @@ function showXPathUI() {
 // Auth form navigation
 function showAuthForm(formType) {
     currentAuthState = formType;
-    
+
     // Hide all forms
     document.getElementById('login-form').style.display = 'none';
     document.getElementById('forgot-form').style.display = 'none';
     document.getElementById('verify-form').style.display = 'none';
     document.getElementById('success-form').style.display = 'none';
-    
+
     // Show selected form
     document.getElementById(`${formType}-form`).style.display = 'block';
-    
+
     // Focus first input
     setTimeout(() => {
         const firstInput = document.querySelector(`#${formType}-form input`);
@@ -287,12 +436,12 @@ function moveToNext(input) {
 function handleLogin() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    
+
     if (!email || !password) {
         alert('Please fill in all fields');
         return;
     }
-    
+
     // Simulate API call - replace with actual authentication
     simulateAPICall('login', { email, password })
         .then(() => showAuthForm('verify'))
@@ -301,12 +450,12 @@ function handleLogin() {
 
 function handleForgotPassword() {
     const email = document.getElementById('reset-email').value;
-    
+
     if (!email) {
         alert('Please enter your email address');
         return;
     }
-    
+
     simulateAPICall('forgotPassword', { email })
         .then(() => alert('Password reset link sent to your email'))
         .catch(error => alert(error));
@@ -315,12 +464,12 @@ function handleForgotPassword() {
 function handleVerify() {
     const otpInputs = document.querySelectorAll('.otp-input');
     const otpCode = Array.from(otpInputs).map(input => input.value).join('');
-    
+
     if (otpCode.length !== 6) {
         alert('Please enter the full 6-digit code');
         return;
     }
-    
+
     simulateAPICall('verify2FA', { code: otpCode })
         .then(() => {
             // Set authenticated state
@@ -344,9 +493,9 @@ function loadXPathUI() {
 
 // XPath form functionality
 function loadXPathData() {
-    chrome.storage.local.get(['xpathData'], function(result) {
+    chrome.storage.local.get(['xpathData'], function (result) {
         const data = result.xpathData || {};
-        
+
         // Populate form fields
         document.getElementById('xpath-start-url').value = data['start-url'] || '';
         document.getElementById('xpath-company-name').value = data['company-name'] || '';
@@ -357,7 +506,7 @@ function loadXPathData() {
         document.getElementById('xpath-job-title').value = data['job-title'] || '';
         document.getElementById('xpath-job-location').value = data['job-location'] || '';
         document.getElementById('xpath-job-content').value = data['job-content'] || '';
-        
+
         // Set playwright radio
         const playwrightValue = data['playwright'] === true ? 'true' : 'false';
         document.querySelector(`input[name="playwright"][value="${playwrightValue}"]`).checked = true;
@@ -379,15 +528,15 @@ function sendXPaths() {
         'playwright': document.querySelector('input[name="playwright"]:checked').value === 'true',
         'playwright-selector': document.getElementById('xpath-playwright-selector').value,
     };
-    
+
     // Save to storage
     chrome.storage.local.set({ xpathData: formData });
-    
+
     // Send to background for API call
     chrome.runtime.sendMessage({
         action: "sendToAPI",
         payload: formData
-    }, function(response) {
+    }, function (response) {
         if (response.success) {
             showQuickNotification('Spider generated successfully!', 'success');
             currentSpiderCode = response.data.spider_code;
@@ -395,6 +544,8 @@ function sendXPaths() {
             toggleEditButton(true);
             // alert('Spider generated successfully!');
             saveGeneratedCode(currentSpiderCode, currentJsonConfig);
+            console.log("Generated Spider Code and config json:", response.data.spider_code, response.data.config);
+
             showPythonCode(response.data.spider_code, response.data.config);
 
             // clearFields();
@@ -424,11 +575,12 @@ function clearFields() {
     currentSpiderCode = null;
     currentJsonConfig = null;
     toggleEditButton(false);
-    
+
     // Clear storage
-    chrome.storage.local.set({ xpathData: {}, 
+    chrome.storage.local.set({
+        xpathData: {},
         lastSpiderCode: null,
-        lastJsonConfig: null 
+        lastJsonConfig: null
     });
     // showNotification('All fields and data cleared successfully!', null, 'success');
     setTimeout(() => {
@@ -459,7 +611,7 @@ function simulateAPICall(endpoint, data) {
 }
 
 // Listen for messages from background script
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     switch (request.action) {
         case "updateXPathField":
             updateXPathField(request.field, request.value);
@@ -477,7 +629,7 @@ function updateXPathField(field, value) {
     if (input) {
         input.value = value;
         // Auto-save to storage
-        chrome.storage.local.get(['xpathData'], function(result) {
+        chrome.storage.local.get(['xpathData'], function (result) {
             const data = result.xpathData || {};
             data[field] = value;
             chrome.storage.local.set({ xpathData: data });
@@ -499,25 +651,55 @@ function addLogoutButton() {
 }
 
 function showPythonCode(code, jsonConfig) {
+    console.log("tesing editor....");
+    // console.log("Setting editor content:", code, jsonConfig);
     // Hide other UIs and show editor
     document.getElementById('auth-ui').style.display = 'none';
     document.getElementById('xpath-ui').style.display = 'none';
     document.getElementById('editor-ui').style.display = 'block';
-    
+
     // Set code content
-    document.getElementById('python-content').textContent = code;
-    document.getElementById('json-content').textContent = JSON.stringify(jsonConfig, null, 2);
-    
+    // document.getElementById('python-content').textContent = code;
+    // document.getElementById('json-content').textContent = JSON.stringify(jsonConfig, null, 2);
+    currentSpiderCode = code;
+    currentJsonConfig = JSON.stringify(jsonConfig, null, 2);
+
+    if (pythonEditor && code) {
+        
+        pythonEditor.setValue(code);
+    }
+
+    // pythonEditor.setValue(code);
+    jsonEditor.setValue(currentJsonConfig);
+
+    // Set initial tab state
+    document.getElementById('tab-spider').classList.add('active');
+    document.getElementById('tab-json').classList.remove('active');
+    document.getElementById('python-tab').classList.add('active');
+    document.getElementById('json-tab').classList.remove('active');
+
+    // Refresh editors to properly render
+    setTimeout(() => {
+        pythonEditor.refresh();
+        jsonEditor.refresh();
+    }, 50);
+
+    updateStatusBar();
+
     // Reset tabs to spider view
-    document.getElementById('tab-spider').style.background = '#4caf50';
-    document.getElementById('tab-json').style.background = '#666';
-    document.getElementById('python-content').style.display = 'block';
-    document.getElementById('json-content').style.display = 'none';
-    
+    // document.getElementById('tab-spider').style.background = '#4caf50';
+    // document.getElementById('tab-json').style.background = '#666';
+    // document.getElementById('python-content').style.display = 'block';
+    // document.getElementById('json-content').style.display = 'none';
+
     // Store current content for copy/download
-    window.currentEditorContent = code;
-    window.currentEditorTab = 'spider';
-    window.currentJsonContent = JSON.stringify(jsonConfig, null, 2);
+    // window.currentEditorContent = code;
+    // window.currentEditorTab = 'spider';
+    // window.currentJsonContent = JSON.stringify(jsonConfig, null, 2);
+    // Update the global variables for later access
+    window.currentSpiderCode = code;
+    window.currentJsonConfig = jsonConfig;
+    showQuickNotification('Spider code loaded successfully!', 'success');
 }
 
 // Add escapeHtml function to sidepanel.js
@@ -550,7 +732,7 @@ function togglePlaywrightSelector(show) {
 function showQuickNotification(message, type = 'success') {
     const notification = document.createElement("div");
     const bgColor = type === 'success' ? '#4caf50' : '#c7a253ff';
-    
+
     notification.style.cssText = `
         position: fixed;
         top: 20px;
@@ -565,16 +747,16 @@ function showQuickNotification(message, type = 'success') {
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         animation: slideIn 0.3s ease;
     `;
-    
+
     notification.innerHTML = `
         <div style="display: flex; align-items: center; gap: 8px;">
             <span>${type === 'success' ? '☑️' : 'ℹ️'}</span>
             <span>${message}</span>
         </div>
     `;
-   
+
     document.body.appendChild(notification);
-    
+
     // Auto-remove after 3 seconds
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease';
@@ -584,7 +766,7 @@ function showQuickNotification(message, type = 'success') {
             }
         }, 300);
     }, 3000);
-    
+
     // Click to dismiss immediately
     notification.addEventListener('click', () => {
         notification.style.animation = 'slideOut 0.3s ease';
