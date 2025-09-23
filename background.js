@@ -82,7 +82,6 @@ function openSidePanelForAuth() {
 
 // Handle messages from side panel and content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  // console.log("📩 Background got message:", message);
   switch (message.action) {
     case "sendToAPI":
       handleSendToAPI(message, sendResponse);
@@ -119,14 +118,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true; // Keep channel open for async response
       
     default:
-      // console.warn("⚠️ Unknown action:", message.action);
-      // return false;
-      break;
+      return false;
   }
 });
 
 // Handle API requests
-function handleSendToAPI(message, sendResponse) {
+async function handleSendToAPI(message, sendResponse) {
   const data = message.payload || {};
   
   const payload = {
@@ -153,36 +150,24 @@ function handleSendToAPI(message, sendResponse) {
     return;
   }
 
-  // try {
-    // const response = await fetch("http://45.63.119.16/generate-spider", {
-    fetch("https://spidergenerator.jobdesk.com/generate-spider", {
+  try {
+    const response = await fetch("http://45.63.119.16/generate-spider", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
-    }).then(res => {
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return res.json();
-    })
-    .then(result => {
-      console.log("✅ API Response:", result);
-      sendResponse({ success: true, data: result });
-    })
-    .catch(err => {
-      console.error("❌ API Error:", err);
-      sendResponse({ success: false, error: err.message || "API request failed" });
     });
     
-    // if (!response.ok) {
-    //   throw new Error(`HTTP error! status: ${response.status}`);
-    // }
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
     
-    // const result = await response.json();
-    // console.log("✅ API Response:", result);
-    // sendResponse({ success: true, data: result });
-  // } catch (err) {
-  //   console.error("❌ API Error:", err);
-  //   sendResponse({ success: false, error: err.message || "API request failed" });
-  // }
+    const result = await response.json();
+    console.log("✅ API Response:", result);
+    sendResponse({ success: true, data: result });
+  } catch (err) {
+    console.error("❌ API Error:", err);
+    sendResponse({ success: false, error: err.message || "API request failed" });
+  }
 }
 
 // Fallback notification function

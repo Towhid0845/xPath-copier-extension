@@ -117,7 +117,6 @@
             color: white;
             border: none;
         }
-
         .btn:hover {
             filter: brightness(0.95);
             /* Subtle darken on hover */
@@ -232,128 +231,6 @@
         .loading {
             opacity: 0.7;
             pointer-events: none;
-        }
-
-        /* editor style */
-        .panel {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 15px;
-            overflow: hidden;
-        }
-
-        .header {
-            padding: 15px 20px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header h3 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 600;
-            color: #495057;
-        }
-
-        .tab-container {
-            display: flex;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
-            padding: 0 20px;
-        }
-
-        .tab-button {
-            background: none;
-            border: none;
-            padding: 10px 15px;
-            cursor: pointer;
-            font-size: 14px;
-            color: #6c757d;
-            position: relative;
-            transition: all 0.2s;
-        }
-
-        .tab-button.active {
-            color: #1971c2;
-            font-weight: 500;
-        }
-
-        .tab-button.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: #1971c2;
-        }
-
-        .editor-container {
-            height: 60vh;
-            position: relative;
-        }
-
-        .CodeMirror {
-            height: 100%;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            font-size: 13px;
-        }
-
-        .back-button {
-            background: #81c4ff;
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 20px;
-            line-height: 1;
-        }
-
-        .loader {
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .editor-tab {
-            display: none;
-        }
-
-        .editor-tab.active {
-            display: block;
-        }
-
-        .status-bar {
-            padding: 10px 20px;
-            background: #f8f9fa;
-            border-top: 1px solid #e9ecef;
-            font-size: 12px;
-            color: #6c757d;
-            display: flex;
-            justify-content: space-between;
         }
 
         /* Responsive */
@@ -536,7 +413,7 @@
         </div>
 
         <!-- Code Editor UI -->
-        <!-- <div id="editor-ui" style="display: none;">
+        <div id="editor-ui" style="display: none;">
             <div style="padding: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3>Generated Spider Code</h3>
@@ -575,61 +452,10 @@
                     </button>
                 </div>
             </div>
-        </div> -->
-        <div id="editor-ui" style="display: none;">
-            <div class="panel">
-                <div class="header">
-                    <h3>Generated Spider Code</h3>
-                    <button id="back-to-form-btn" class="back-button">←</button>
-                </div>
-
-                <div class="tab-container">
-                    <button id="tab-spider" class="tab-button active">Spider Code</button>
-                    <button id="tab-json" class="tab-button">JSON Config</button>
-                </div>
-
-                <div class="editor-container">
-                    <div class="editor-tab active" id="python-tab">
-                        <textarea id="python-editor"></textarea>
-                    </div>
-                    <div class="editor-tab" id="json-tab">
-                        <textarea id="json-editor"></textarea>
-                    </div>
-                </div>
-
-                <div class="status-bar">
-                    <span id="line-info">Line: 1, Column: 1</span>
-                    <span id="mode-info">Python</span>
-                </div>
-
-                <div class="button-container">
-                    <button id="copy-code-btn" class="btn btn-primary">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                        </svg>
-                        Copy Code
-                    </button>
-                    <button id="download-code-btn" class="btn btn-secondary">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        Download
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
-    <script src="codemirror/lib/codemirror.js"></script>
-    <script src="codemirror/mode/python/python.js"></script>
-    <script src="codemirror/mode/javascript/javascript.js"></script>
     <script src="sidepanel.js"></script>
-    <!-- <script src="https://unpkg.com/monaco-editor@0.33.0/min/vs/loader.js"></script> -->
 </body>
 
 </html>
