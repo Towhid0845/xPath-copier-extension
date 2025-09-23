@@ -151,7 +151,7 @@ async function handleSendToAPI(message, sendResponse) {
   }
 
   try {
-    const response = await fetch("http://45.63.119.16/generate-spider", {
+    const response = await fetch("https://spidergenerator.jobdesk.com/generate-spider", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
