@@ -413,7 +413,7 @@ async function loadWebsitesFromAPI() {
         `;
 
         // Replace this with your actual API call
-        const response = await fetch('YOUR_API_ENDPOINT_HERE');
+        const response = await fetch('https://data.jobdesk.com/api/GetSpiderListPlugin');
         const data = await response.json();
 
         websitesData = data; // Assuming API returns array of websites
