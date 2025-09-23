@@ -5,7 +5,7 @@ let currentSpiderCode = null;
 let currentJsonConfig = null;
 
 // Initialize the side panel
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initializePanel();
     loadAuthenticationState();
     initializeEventListeners();
@@ -23,7 +23,7 @@ function initializePanel() {
     // Check for Enter key in auth forms
     const authInputs = document.querySelectorAll('#auth-ui input');
     authInputs.forEach(input => {
-        input.addEventListener('keypress', function(e) {
+        input.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 handleEnterKey();
             }
@@ -33,11 +33,12 @@ function initializePanel() {
 
 // Load authentication state from storage
 function loadAuthenticationState() {
-    chrome.storage.local.get(['isAuthenticated'], function(result) {
+    chrome.storage.local.get(['isAuthenticated'], function (result) {
         isAuthenticated = result.isAuthenticated || false;
-        
+
         if (isAuthenticated) {
-            showXPathUI();
+            showWebsitesUI();
+            // showXPathUI();
         } else {
             showAuthUI();
             showAuthForm('login');
@@ -57,7 +58,8 @@ function initializeEventListeners() {
     document.getElementById('show-login')?.addEventListener('click', () => showAuthForm('login'));
 
     // Success button
-    document.getElementById('success-btn')?.addEventListener('click', loadXPathUI);
+    // document.getElementById('success-btn')?.addEventListener('click', loadXPathUI);
+    document.getElementById('success-btn')?.addEventListener('click', showWebsitesUI);
 
     // XPath form buttons
     document.getElementById('generate-btn')?.addEventListener('click', sendXPaths);
@@ -70,7 +72,7 @@ function initializeEventListeners() {
 }
 
 function loadStoredCode() {
-    chrome.storage.local.get(['lastSpiderCode', 'lastJsonConfig'], function(result) {
+    chrome.storage.local.get(['lastSpiderCode', 'lastJsonConfig'], function (result) {
         if (result.lastSpiderCode && result.lastJsonConfig) {
             currentSpiderCode = result.lastSpiderCode;
             currentJsonConfig = result.lastJsonConfig;
@@ -115,7 +117,7 @@ function showEditorUI() {
 function initializePlaywrightListeners() {
     const playwrightRadios = document.querySelectorAll('input[name="playwright"]');
     playwrightRadios.forEach(radio => {
-        radio.addEventListener('change', function(e) {
+        radio.addEventListener('change', function (e) {
             togglePlaywrightSelector(e.target.value === 'true');
         });
     });
@@ -132,29 +134,30 @@ function initializeEditorListeners() {
     // Tab switching
     document.getElementById('tab-spider')?.addEventListener('click', switchToSpiderTab);
     document.getElementById('tab-json')?.addEventListener('click', switchToJsonTab);
-    
+
     // Editor actions
     document.getElementById('copy-code-btn')?.addEventListener('click', copyEditorContent);
     document.getElementById('download-code-btn')?.addEventListener('click', downloadEditorContent);
     document.getElementById('back-to-form-btn')?.addEventListener('click', backToXPathForm);
+    document.getElementById('back-to-list-btn')?.addEventListener('click', backToSpiderList);
 }
 
 function initializeOTPListeners() {
     const otpContainer = document.getElementById('otp-container');
     if (otpContainer) {
         // Use event delegation for OTP inputs
-        otpContainer.addEventListener('input', function(e) {
+        otpContainer.addEventListener('input', function (e) {
             if (e.target.classList.contains('otp-input')) {
                 moveToNext(e.target);
             }
         });
-        
+
         // Also add paste handling for better UX
-        otpContainer.addEventListener('paste', function(e) {
+        otpContainer.addEventListener('paste', function (e) {
             e.preventDefault();
             const pastedData = e.clipboardData.getData('text').replace(/\D/g, ''); // Numbers only
             const otpInputs = Array.from(otpContainer.querySelectorAll('.otp-input'));
-            
+
             // Fill OTP inputs with pasted data
             for (let i = 0; i < Math.min(pastedData.length, otpInputs.length); i++) {
                 otpInputs[i].value = pastedData[i];
@@ -186,9 +189,9 @@ function switchToJsonTab() {
 
 function copyEditorContent() {
     const content = window.currentEditorTab === 'spider' ? window.currentEditorContent : window.currentJsonContent;
-        // ? document.getElementById('python-content').textContent
-        // : document.getElementById('json-content').textContent;
-    
+    // ? document.getElementById('python-content').textContent
+    // : document.getElementById('json-content').textContent;
+
     navigator.clipboard.writeText(content).then(() => {
         // alert(`${window.currentEditorTab === 'spider' ? 'Code' : 'Config'} copied to clipboard!`);
         showQuickNotification('Code copied to clipboard!', 'success');
@@ -197,12 +200,12 @@ function copyEditorContent() {
 
 function downloadEditorContent() {
     const content = window.currentEditorTab === 'spider' ? window.currentEditorContent : window.currentJsonContent;
-        // ? document.getElementById('python-content').textContent
-        // : document.getElementById('json-content').textContent;
-    
+    // ? document.getElementById('python-content').textContent
+    // : document.getElementById('json-content').textContent;
+
     const fileName = window.currentEditorTab === 'spider' ? 'spider.py' : 'config.json';
     const contentType = window.currentEditorTab === 'spider' ? 'text/python' : 'application/json';
-    
+
     const blob = new Blob([content], { type: contentType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -219,31 +222,238 @@ function backToXPathForm() {
     toggleEditButton(!!currentSpiderCode);
 }
 
+function backToSpiderList() {
+    document.getElementById('websites-ui').style.display = 'block';
+    document.getElementById('xpath-ui').style.display = 'none';
+    document.getElementById('editor-ui').style.display = 'none';
+
+    // toggleEditButton(!!currentSpiderCode);
+}
+
 // Show appropriate UI based on auth state
 function showAuthUI() {
     document.getElementById('auth-ui').style.display = 'block';
+    document.getElementById('websites-ui').style.display = 'none';
     document.getElementById('xpath-ui').style.display = 'none';
 }
 
-function showXPathUI() {
+// website list UI start
+let websitesData = [];
+let currentFilter = 'no-spider';
+
+// Initialize websites UI
+function initializeWebsitesUI() {
+    loadWebsitesData();
+    setupWebsitesEventListeners();
+    renderWebsitesList();
+}
+
+// Load static sample data
+function loadWebsitesData() {
+    websitesData = [
+        { id: 1, iso2: 'US', company: 'Google', domain: 'google.com', status: 'no-spider' },
+        { id: 2, iso2: 'UK', company: 'Amazon', domain: 'amazon.co.uk', status: 'broken-spider' },
+        { id: 3, iso2: 'DE', company: 'Siemens', domain: 'siemens.com', status: 'no-spider' },
+        { id: 4, iso2: 'FR', company: 'LVMH', domain: 'lvmh.fr', status: 'no-spider' },
+        { id: 5, iso2: 'JP', company: 'Toyota', domain: 'toyota.jp', status: 'no-spider' },
+        { id: 6, iso2: 'CA', company: 'Shopify', domain: 'shopify.com', status: 'broken-spider' },
+        { id: 7, iso2: 'AU', company: 'Atlassian', domain: 'atlassian.com', status: 'no-spider' },
+        { id: 8, iso2: 'SG', company: 'Grab', domain: 'grab.com', status: 'no-spider' },
+        { id: 9, iso2: 'IN', company: 'Infosys', domain: 'infosys.com', status: 'broken-spider' },
+        { id: 10, iso2: 'BR', company: 'Petrobras', domain: 'petrobras.com.br', status: 'no-spider' }
+    ];
+}
+
+// Setup event listeners
+function setupWebsitesEventListeners() {
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            currentFilter = e.target.dataset.filter;
+            filterWebsites(currentFilter);
+        });
+    });
+
+    // Search functionality
+    // document.getElementById('website-search').addEventListener('input', (e) => {
+    //     searchWebsites(e.target.value);
+    // });
+
+    // Website item clicks
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.website-item')) {
+            const websiteItem = e.target.closest('.website-item');
+            const websiteId = websiteItem.dataset.id;
+            selectWebsite(websiteId);
+        }
+    });
+}
+
+// Render websites list
+function renderWebsitesList(filteredData = websitesData) {
+    const listContainer = document.getElementById('websites-list');
+
+    if (filteredData.length === 0) {
+        listContainer.innerHTML = `
+            <div class="empty-state">
+                <span class="empty-icon">🔍</span>
+                <p>No websites found matching your criteria.</p>
+            </div>
+        `;
+        // updateStatistics();
+        return;
+    }
+
+    listContainer.innerHTML = filteredData.map(website => `
+        <tr class="website-item" data-id="${website.id}">
+            <th class="body-item" style="padding-left: 25px;"><span class="iso2-code">${website.iso2}</span></th>
+            <th class="body-item"><span class="company-name">${website.company}</span></th>
+            <th class="body-item" style="padding-right: 25px;"><span class="domain-name">${website.domain}</span></th>
+        </tr>
+    `).join('');
+
+    // updateStatistics();
+}
+
+// Filter websites
+function filterWebsites(filterType) {
+    let filteredData = websitesData;
+
+    switch (filterType) {
+        case 'no-spider':
+            filteredData = websitesData.filter(w => w.status === 'no-spider');
+            break;
+        case 'broken-spider':
+            filteredData = websitesData.filter(w => w.status === 'broken-spider');
+            break;
+        case 'all':
+        default:
+            filteredData = websitesData;
+    }
+
+    renderWebsitesList(filteredData);
+}
+
+// Search websites
+function searchWebsites(query) {
+    if (!query) {
+        filterWebsites(currentFilter);
+        return;
+    }
+
+    const filteredData = websitesData.filter(website =>
+        website.company.toLowerCase().includes(query.toLowerCase()) ||
+        website.domain.toLowerCase().includes(query.toLowerCase()) ||
+        website.iso2.toLowerCase().includes(query.toLowerCase())
+    );
+
+    renderWebsitesList(filteredData);
+}
+
+// Select website (navigate to XPath form)
+function selectWebsite(websiteId) {
+    const website = websitesData.find(w => w.id == websiteId);
+    if (website) {
+        // Remove selection from all items
+        document.querySelectorAll('.website-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+
+        // Add selection to clicked item
+        const selectedItem = document.querySelector(`.website-item[data-id="${websiteId}"]`);
+        if (selectedItem) {
+            selectedItem.classList.add('selected');
+        }
+
+        // Hide websites UI and show XPath form after a brief delay
+        setTimeout(() => {
+            // document.getElementById('websites-ui').style.display = 'none';
+            // document.getElementById('xpath-ui').style.display = 'block';
+            showXPathUI()
+
+            // Pre-fill the domain in start URL
+            document.getElementById('xpath-start-url').value = `https://${website.domain}/careers`;
+            document.getElementById('xpath-company-name').value = website.company;
+
+            showQuickNotification(`Selected ${website.company} for spider creation`, 'info');
+        }, 300);
+    }
+}
+
+// Update statistics
+function updateStatistics() {
+    const total = websitesData.length;
+    const noSpider = websitesData.filter(w => w.status === 'no-spider').length;
+    const brokenSpider = websitesData.filter(w => w.status === 'broken-spider').length;
+
+    document.getElementById('total-websites').textContent = total;
+    document.getElementById('no-spider-count').textContent = noSpider;
+    document.getElementById('broken-spider-count').textContent = brokenSpider;
+}
+
+// Show websites UI (call this when authentication is successful)
+function showWebsitesUI() {
     document.getElementById('auth-ui').style.display = 'none';
+    document.getElementById('websites-ui').style.display = 'block';
+    document.getElementById('xpath-ui').style.display = 'none';
+    initializeWebsitesUI();
+}
+
+// Function to load data from API (for future use)
+async function loadWebsitesFromAPI() {
+    try {
+        // Show loading state
+        document.getElementById('websites-list').innerHTML = `
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>Loading websites...</p>
+            </div>
+        `;
+
+        // Replace this with your actual API call
+        const response = await fetch('YOUR_API_ENDPOINT_HERE');
+        const data = await response.json();
+
+        websitesData = data; // Assuming API returns array of websites
+        renderWebsitesList();
+
+    } catch (error) {
+        console.error('Failed to load websites:', error);
+        document.getElementById('websites-list').innerHTML = `
+            <div class="empty-state">
+                <span class="empty-icon">❌</span>
+                <p>Failed to load websites. Using sample data.</p>
+            </div>
+        `;
+        loadWebsitesData(); // Fallback to static data
+        renderWebsitesList();
+    }
+}
+//website list UI end
+
+
+function showXPathUI() {
     document.getElementById('xpath-ui').style.display = 'block';
+    document.getElementById('auth-ui').style.display = 'none';
+    document.getElementById('websites-ui').style.display = 'none';
     loadXPathData();
 }
 
 // Auth form navigation
 function showAuthForm(formType) {
     currentAuthState = formType;
-    
+
     // Hide all forms
     document.getElementById('login-form').style.display = 'none';
     document.getElementById('forgot-form').style.display = 'none';
     document.getElementById('verify-form').style.display = 'none';
     document.getElementById('success-form').style.display = 'none';
-    
+
     // Show selected form
     document.getElementById(`${formType}-form`).style.display = 'block';
-    
+
     // Focus first input
     setTimeout(() => {
         const firstInput = document.querySelector(`#${formType}-form input`);
@@ -287,12 +497,12 @@ function moveToNext(input) {
 function handleLogin() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    
+
     if (!email || !password) {
         alert('Please fill in all fields');
         return;
     }
-    
+
     // Simulate API call - replace with actual authentication
     simulateAPICall('login', { email, password })
         .then(() => showAuthForm('verify'))
@@ -301,12 +511,12 @@ function handleLogin() {
 
 function handleForgotPassword() {
     const email = document.getElementById('reset-email').value;
-    
+
     if (!email) {
         alert('Please enter your email address');
         return;
     }
-    
+
     simulateAPICall('forgotPassword', { email })
         .then(() => alert('Password reset link sent to your email'))
         .catch(error => alert(error));
@@ -315,12 +525,12 @@ function handleForgotPassword() {
 function handleVerify() {
     const otpInputs = document.querySelectorAll('.otp-input');
     const otpCode = Array.from(otpInputs).map(input => input.value).join('');
-    
+
     if (otpCode.length !== 6) {
         alert('Please enter the full 6-digit code');
         return;
     }
-    
+
     simulateAPICall('verify2FA', { code: otpCode })
         .then(() => {
             // Set authenticated state
@@ -344,9 +554,9 @@ function loadXPathUI() {
 
 // XPath form functionality
 function loadXPathData() {
-    chrome.storage.local.get(['xpathData'], function(result) {
+    chrome.storage.local.get(['xpathData'], function (result) {
         const data = result.xpathData || {};
-        
+
         // Populate form fields
         document.getElementById('xpath-start-url').value = data['start-url'] || '';
         document.getElementById('xpath-company-name').value = data['company-name'] || '';
@@ -357,7 +567,7 @@ function loadXPathData() {
         document.getElementById('xpath-job-title').value = data['job-title'] || '';
         document.getElementById('xpath-job-location').value = data['job-location'] || '';
         document.getElementById('xpath-job-content').value = data['job-content'] || '';
-        
+
         // Set playwright radio
         const playwrightValue = data['playwright'] === true ? 'true' : 'false';
         document.querySelector(`input[name="playwright"][value="${playwrightValue}"]`).checked = true;
@@ -379,15 +589,15 @@ function sendXPaths() {
         'playwright': document.querySelector('input[name="playwright"]:checked').value === 'true',
         'playwright-selector': document.getElementById('xpath-playwright-selector').value,
     };
-    
+
     // Save to storage
     chrome.storage.local.set({ xpathData: formData });
-    
+
     // Send to background for API call
     chrome.runtime.sendMessage({
         action: "sendToAPI",
         payload: formData
-    }, function(response) {
+    }, function (response) {
         if (response.success) {
             showQuickNotification('Spider generated successfully!', 'success');
             currentSpiderCode = response.data.spider_code;
@@ -424,11 +634,12 @@ function clearFields() {
     currentSpiderCode = null;
     currentJsonConfig = null;
     toggleEditButton(false);
-    
+
     // Clear storage
-    chrome.storage.local.set({ xpathData: {}, 
+    chrome.storage.local.set({
+        xpathData: {},
         lastSpiderCode: null,
-        lastJsonConfig: null 
+        lastJsonConfig: null
     });
     // showNotification('All fields and data cleared successfully!', null, 'success');
     setTimeout(() => {
@@ -459,7 +670,7 @@ function simulateAPICall(endpoint, data) {
 }
 
 // Listen for messages from background script
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     switch (request.action) {
         case "updateXPathField":
             updateXPathField(request.field, request.value);
@@ -477,7 +688,7 @@ function updateXPathField(field, value) {
     if (input) {
         input.value = value;
         // Auto-save to storage
-        chrome.storage.local.get(['xpathData'], function(result) {
+        chrome.storage.local.get(['xpathData'], function (result) {
             const data = result.xpathData || {};
             data[field] = value;
             chrome.storage.local.set({ xpathData: data });
@@ -503,17 +714,17 @@ function showPythonCode(code, jsonConfig) {
     document.getElementById('auth-ui').style.display = 'none';
     document.getElementById('xpath-ui').style.display = 'none';
     document.getElementById('editor-ui').style.display = 'block';
-    
+
     // Set code content
     document.getElementById('python-content').textContent = code;
     document.getElementById('json-content').textContent = JSON.stringify(jsonConfig, null, 2);
-    
+
     // Reset tabs to spider view
     document.getElementById('tab-spider').style.background = '#4caf50';
     document.getElementById('tab-json').style.background = '#666';
     document.getElementById('python-content').style.display = 'block';
     document.getElementById('json-content').style.display = 'none';
-    
+
     // Store current content for copy/download
     window.currentEditorContent = code;
     window.currentEditorTab = 'spider';
@@ -550,7 +761,7 @@ function togglePlaywrightSelector(show) {
 function showQuickNotification(message, type = 'success') {
     const notification = document.createElement("div");
     const bgColor = type === 'success' ? '#4caf50' : '#c7a253ff';
-    
+
     notification.style.cssText = `
         position: fixed;
         top: 20px;
@@ -565,16 +776,16 @@ function showQuickNotification(message, type = 'success') {
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         animation: slideIn 0.3s ease;
     `;
-    
+
     notification.innerHTML = `
         <div style="display: flex; align-items: center; gap: 8px;">
             <span>${type === 'success' ? '☑️' : 'ℹ️'}</span>
             <span>${message}</span>
         </div>
     `;
-   
+
     document.body.appendChild(notification);
-    
+
     // Auto-remove after 3 seconds
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease';
@@ -584,7 +795,7 @@ function showQuickNotification(message, type = 'success') {
             }
         }, 300);
     }, 3000);
-    
+
     // Click to dismiss immediately
     notification.addEventListener('click', () => {
         notification.style.animation = 'slideOut 0.3s ease';

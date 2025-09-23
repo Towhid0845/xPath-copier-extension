@@ -23,7 +23,7 @@
         .container {
             width: 100%;
             min-height: 100vh;
-            padding: 20px;
+            padding: 25px;
         }
 
         /* Auth UI Styles */
@@ -117,6 +117,12 @@
             color: white;
             border: none;
         }
+
+        .back-button {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+        }
+
         .btn:hover {
             filter: brightness(0.95);
             /* Subtle darken on hover */
@@ -227,13 +233,306 @@
             margin-bottom: 15px;
         }
 
+
+        /* Websites UI Styles */
+        #websites-ui {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .websites-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding-bottom: 24px;
+        }
+
+        .websites-header {
+            padding: 10px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .websites-title {
+            font-size: 18px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        /* Filter Controls */
+        .filter-controls {
+            padding: 12px 25px;
+            /* background: #f8f9fa; */
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: end;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-box {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .filter-btn {
+            border: 1px solid #ddd;
+            /* border: none; */
+            border-radius: 5px;
+            padding: 3px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .filter-icon {
+            font-size: 13px;
+        }
+
+        /* Websites List */
+
+        table,
+        th,
+        td {
+            border: none;
+            border-collapse: collapse;
+        }
+
+        .websites-list-container {
+            max-height: 500px;
+            overflow-y: auto;
+            width: 100%;
+            padding: 0 25px;
+            overflow: hidden;
+        }
+
+        .list-header {
+            /* display: grid; */
+            /* grid-template-columns: 80px 1fr 1fr; */
+            /* gap: 20px; */
+            padding: 15px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #666;
+            /* position: sticky; */
+            /* top: 0; */
+            /* z-index: 10; */
+        }
+
+        .header-item {
+            padding: 5px;
+            text-align: start;
+        }
+
+        .body-item {
+            text-align: start;
+            padding: 5px;
+        }
+
+        .websites-list {
+            min-height: 200px;
+        }
+
+        .website-item {
+            /* display: grid; */
+            /* grid-template-columns: 80px 1fr 1fr; */
+            /* gap: 20px; */
+            padding: 15px 30px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            /* align-items: center; */
+        }
+
+        .website-item:hover {
+            background: #f8f9ff;
+            transform: translateX(5px);
+        }
+
+        .website-item:last-child {
+            border-bottom: none;
+        }
+
+        .website-item.selected {
+            background: #e3f2fd;
+            border-left: 4px solid #667eea;
+        }
+
+        /* .iso2-code {
+            background: #667eea;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            text-transform: uppercase;
+        } */
+
+        /* .company-name {
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .domain-name {
+            color: #666;
+            font-family: monospace;
+            font-size: 14px;
+        } */
+
+        /* Empty State */
+        .empty-state {
+            padding: 60px 30px;
+            text-align: center;
+            color: #999;
+            grid-column: 1 / -1;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* Statistics */
+        .websites-stats {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 24px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
         /* Loading State */
-        .loading {
-            opacity: 0.7;
-            pointer-events: none;
+        .loading-state {
+            padding: 40px 30px;
+            text-align: center;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+
+        .loading-spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         /* Responsive */
+        @media (max-width: 768px) {
+            .filter-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .list-header,
+            .website-item {
+                grid-template-columns: 60px 1fr;
+                gap: 15px;
+            }
+
+            .domain-name {
+                grid-column: 1 / -1;
+                font-size: 12px;
+            }
+
+            .websites-stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 15px;
@@ -270,7 +569,7 @@
         }
 
         #success-btn {
-            margin-top: 24px;
+            margin: 24px auto 0 auto;
         }
     </style>
 </head>
@@ -347,9 +646,86 @@
             </div>
         </div>
 
+        <!-- List of websites without spider -->
+        <div id="websites-ui" style="display: none;">
+            <div class="websites-container">
+                <div class="websites-header">
+                    <h2 class="websites-title">🌐 Select a website to create a spider</h2>
+                </div>
+
+                <!-- Filter Controls -->
+                <div class="filter-controls">
+                    <!-- <div class="filter-left">
+                        <div class="search-box">
+                            <input type="text" id="website-search" placeholder="Search websites...">
+                            <span class="search-icon">🔍</span>
+                        </div>
+                    </div> -->
+                    <div class="filter-right">
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" data-filter="no-spider">
+                                ⛔
+                            </button>
+                            <button class="filter-btn" data-filter="broken-spider">
+                                ⚠️
+                            </button>
+                            <button class="filter-btn" data-filter="all">
+                                🌐
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Websites List -->
+                <div class="table-container">
+                    <table class="websites-list-container">
+                        <thead class="list-header">
+                            <tr>
+                                <th class="header-item" style="min-width: 50px; padding-left: 25px;">ISO2</th>
+                                <th class="header-item" style="min-width: 200px;">Company Name</th>
+                                <th class="header-item" style="min-width: 150px; padding-right: 25px">Domain</th>
+                            </tr>
+                        </thead>
+                        <tbody class="websites-list" id="websites-list">
+                            <!-- Websites will be populated here dynamically -->
+                            <tr class="empty-state">
+                                <th>
+                                    <span class="empty-icon">📭</span>
+                                    <p>No websites found.</p>
+                                </th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Statistics -->
+                <!-- <div class="websites-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="total-websites">0</span>
+                        <span class="stat-label">Total Websites</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="no-spider-count">0</span>
+                        <span class="stat-label">No Spider</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="broken-spider-count">0</span>
+                        <span class="stat-label">Broken Spider</span>
+                    </div>
+                </div> -->
+            </div>
+        </div>
+
+
         <!-- XPath Form UI -->
         <div id="xpath-ui">
             <div class="xpath-container">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                    <button id="back-to-list-btn" class="btn back-button" style="font-size: 24px; padding: 0 16px 4px;">
+                        ←
+                    </button>
+                    <button class="btn btn-warning" id="clear-btn">Clear All</button>
+                </div>
                 <div class="field-group">
                     <label for="xpath-start-url">Start URL</label>
                     <input type="text" id="xpath-start-url">
@@ -402,11 +778,9 @@
                     </div>
                 </div>
                 <div class="action-buttons">
-                    <button class="btn btn-primary" id="generate-btn">
-                        Generate
-                    </button>
+                    <button class="btn btn-primary" id="generate-btn">Generate</button>
                     <button class="btn btn-secondary" id="edit-btn" style="display: none;">Edit Code</button>
-                    <button class="btn btn-warning" id="clear-btn">Clear All</button>
+
                     <button class="btn btn-success" id="publish-btn">Publish</button>
                 </div>
             </div>
@@ -417,8 +791,7 @@
             <div style="padding: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3>Generated Spider Code</h3>
-                    <button id="back-to-form-btn"
-                        style="background: #81c4ff; color: rgb(255, 255, 255); border: none; padding: 0px 15px 4px; border-radius: 30px; font-size: 24px; line-height: 24px; cursor: pointer;">
+                    <button id="back-to-form-btn" class="btn back-button" style="font-size: 24px; padding: 0 16px 4px;">
                         ←
                     </button>
                 </div>
