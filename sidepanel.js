@@ -242,8 +242,9 @@ let websitesData = [];
 let currentFilter = 'no-spider';
 
 // Initialize websites UI
-function initializeWebsitesUI() {
-    loadWebsitesData();
+async function initializeWebsitesUI() {
+    // loadWebsitesData();
+    await loadWebsitesFromAPI();
     setupWebsitesEventListeners();
     renderWebsitesList();
 }
@@ -285,7 +286,9 @@ function setupWebsitesEventListeners() {
     document.addEventListener('click', (e) => {
         if (e.target.closest('.website-item')) {
             const websiteItem = e.target.closest('.website-item');
+            // console.log('Selected item:', websiteItem);
             const websiteId = websiteItem.dataset.id;
+            // console.log('Selected company:', websiteId);
             selectWebsite(websiteId);
         }
     });
@@ -299,18 +302,18 @@ function renderWebsitesList(filteredData = websitesData) {
         listContainer.innerHTML = `
             <div class="empty-state">
                 <span class="empty-icon">🔍</span>
-                <p>No websites found matching your criteria.</p>
+                <p>No companies found matching your criteria.</p>
             </div>
         `;
         // updateStatistics();
         return;
     }
-
+    console.log('company list:', filteredData);
     listContainer.innerHTML = filteredData.map(website => `
-        <tr class="website-item" data-id="${website.id}">
-            <th class="body-item" style="padding-left: 25px;"><span class="iso2-code">${website.iso2}</span></th>
-            <th class="body-item"><span class="company-name">${website.company}</span></th>
-            <th class="body-item" style="padding-right: 25px;"><span class="domain-name">${website.domain}</span></th>
+        <tr class="website-item" data-id="${website.companyName}">
+            <th class="body-item" style="padding-left: 25px;"><span class="iso2-code">${website.countryCode}</span></th>
+            <th class="body-item"><span class="company-name">${website.companyName}</span></th>
+            <th class="body-item" style="padding-right: 25px;"><span class="domain-name">${website.sourceKey}</span></th>
         </tr>
     `).join('');
 
@@ -323,7 +326,7 @@ function filterWebsites(filterType) {
 
     switch (filterType) {
         case 'no-spider':
-            filteredData = websitesData.filter(w => w.status === 'no-spider');
+            filteredData = websitesData.filter(w => (w.hasNoSpider == true) === 'no-spider');
             break;
         case 'broken-spider':
             filteredData = websitesData.filter(w => w.status === 'broken-spider');
@@ -354,7 +357,7 @@ function searchWebsites(query) {
 
 // Select website (navigate to XPath form)
 function selectWebsite(websiteId) {
-    const website = websitesData.find(w => w.id == websiteId);
+    const website = websitesData.find(w => w.companyName == websiteId);
     if (website) {
         // Remove selection from all items
         document.querySelectorAll('.website-item').forEach(item => {
@@ -367,17 +370,34 @@ function selectWebsite(websiteId) {
             selectedItem.classList.add('selected');
         }
 
-        // Hide websites UI and show XPath form after a brief delay
+
         setTimeout(() => {
-            // document.getElementById('websites-ui').style.display = 'none';
-            // document.getElementById('xpath-ui').style.display = 'block';
-            showXPathUI()
+            showXPathUI();
 
-            // Pre-fill the domain in start URL
-            document.getElementById('xpath-start-url').value = `https://${website.domain}/careers`;
-            document.getElementById('xpath-company-name').value = website.company;
+            // Wait for UI to be fully rendered
+            setTimeout(() => {
+                // Debug: Check if elements exist
+                const startUrlInput = document.getElementById('xpath-start-url');
+                const companyNameInput = document.getElementById('xpath-company-name');
+                const countryCodeInput = document.getElementById('xpath-source-country');
 
-            showQuickNotification(`Selected ${website.company} for spider creation`, 'info');
+                if (startUrlInput && companyNameInput) {
+                    startUrlInput.value = website.startUrl;
+                    companyNameInput.value = website.companyName;
+                    countryCodeInput.value = website.countryCode;
+                    console.log('Values set successfully');
+
+                    // Force UI update (if needed)
+                    startUrlInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    companyNameInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    countryCodeInput.dispatchEvent(new Event('input', { bubbles: true }));
+                } else {
+                    console.error('Input elements not found!');
+                }
+
+                showQuickNotification(`Selected ${website.companyName} for spider creation`, 'info');
+            }, 100); // Small delay to ensure UI is ready
+
         }, 300);
     }
 }
@@ -412,9 +432,17 @@ async function loadWebsitesFromAPI() {
             </div>
         `;
 
-        // Replace this with your actual API call
-        const response = await fetch('https://data.jobdesk.com/api/GetSpiderListPlugin');
+        const token = '215c566011a84286a440e42bb40d762347d4ab2be3334a438f9f6c2041cd57c35ca5fb28ce874110aa6873398b2d9f1c';
+        const API_URL = 'https://data.jobdesk.com/api/GetSpiderListPlugin';
+        const response = await fetch(API_URL, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
+        // console.log('company list from API:', data);
 
         websitesData = data; // Assuming API returns array of websites
         renderWebsitesList();
@@ -424,11 +452,10 @@ async function loadWebsitesFromAPI() {
         document.getElementById('websites-list').innerHTML = `
             <div class="empty-state">
                 <span class="empty-icon">❌</span>
-                <p>Failed to load websites. Using sample data.</p>
             </div>
         `;
-        loadWebsitesData(); // Fallback to static data
-        renderWebsitesList();
+        // loadWebsitesData(); // Fallback to static data
+        // renderWebsitesList();
     }
 }
 //website list UI end
