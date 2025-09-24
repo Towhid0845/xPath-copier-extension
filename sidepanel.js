@@ -69,6 +69,20 @@ function initializeEventListeners() {
     initializePlaywrightListeners();
 
     document.getElementById('edit-btn')?.addEventListener('click', showEditorUI);
+    document.getElementById('custom-xpath-btn')?.addEventListener('click', showCustomXPathUI);
+}
+
+function showCustomXPathUI() {
+
+    // Clear any existing form data
+    // clearFields();
+
+    // Show XPath UI directly
+    showXPathUI();
+
+    // Show instruction message
+    // showQuickNotification('Enter website details manually for custom XPath collection', 'info');
+
 }
 
 function loadStoredCode() {
@@ -140,6 +154,52 @@ function initializeEditorListeners() {
     document.getElementById('download-code-btn')?.addEventListener('click', downloadEditorContent);
     document.getElementById('back-to-form-btn')?.addEventListener('click', backToXPathForm);
     document.getElementById('back-to-list-btn')?.addEventListener('click', backToSpiderList);
+    document.getElementById('publish-btn')?.addEventListener('click', async function () {
+        // Validate that we have code to publish
+        const spiderCode = document.getElementById('python-content').value;
+        const jsonConfig = document.getElementById('json-content').value;
+
+        if (!spiderCode.trim() || !jsonConfig.trim()) {
+            showQuickNotification('Cannot publish: Spider code or configuration is empty', 'error');
+            return;
+        }
+
+        // Show custom confirmation dialog
+        const confirmed = await showPublishConfirmation();
+
+        if (!confirmed) {
+            console.log('Publish cancelled by user');
+            showQuickNotification('Publish cancelled', 'info');
+            return;
+        }
+
+        // Show loading state
+        this.innerHTML = 'Publishing...';
+        this.disabled = true;
+
+        try {
+            const result = await publishSpider();
+
+            if (result.success) {
+                // Optional: Clear form or show success message
+                // console.log('Spider published successfully!');
+                clearFields();
+                showWebsitesUI();
+
+                // Optional: Redirect or show success UI
+                showQuickNotification('Spider published successfully!', 'success');
+            } else {
+                console.error('Publish failed:', result.error);
+            }
+        }
+        catch (error) {
+            showQuickNotification('Publish error: ' + error.message, 'error');
+        } finally {
+            // Reset button state
+            this.innerHTML = 'Publish';
+            this.disabled = false;
+        }
+    });
 }
 
 function initializeOTPListeners() {
@@ -239,7 +299,8 @@ function showAuthUI() {
 
 // website list UI start
 let websitesData = [];
-let currentFilter = 'no-spider';
+let websiteId = null;
+let currentFilter = 'all';
 
 // Initialize websites UI
 async function initializeWebsitesUI() {
@@ -249,21 +310,6 @@ async function initializeWebsitesUI() {
     renderWebsitesList();
 }
 
-// Load static sample data
-function loadWebsitesData() {
-    websitesData = [
-        { id: 1, iso2: 'US', company: 'Google', domain: 'google.com', status: 'no-spider' },
-        { id: 2, iso2: 'UK', company: 'Amazon', domain: 'amazon.co.uk', status: 'broken-spider' },
-        { id: 3, iso2: 'DE', company: 'Siemens', domain: 'siemens.com', status: 'no-spider' },
-        { id: 4, iso2: 'FR', company: 'LVMH', domain: 'lvmh.fr', status: 'no-spider' },
-        { id: 5, iso2: 'JP', company: 'Toyota', domain: 'toyota.jp', status: 'no-spider' },
-        { id: 6, iso2: 'CA', company: 'Shopify', domain: 'shopify.com', status: 'broken-spider' },
-        { id: 7, iso2: 'AU', company: 'Atlassian', domain: 'atlassian.com', status: 'no-spider' },
-        { id: 8, iso2: 'SG', company: 'Grab', domain: 'grab.com', status: 'no-spider' },
-        { id: 9, iso2: 'IN', company: 'Infosys', domain: 'infosys.com', status: 'broken-spider' },
-        { id: 10, iso2: 'BR', company: 'Petrobras', domain: 'petrobras.com.br', status: 'no-spider' }
-    ];
-}
 
 // Setup event listeners
 function setupWebsitesEventListeners() {
@@ -287,7 +333,7 @@ function setupWebsitesEventListeners() {
         if (e.target.closest('.website-item')) {
             const websiteItem = e.target.closest('.website-item');
             // console.log('Selected item:', websiteItem);
-            const websiteId = websiteItem.dataset.id;
+            websiteId = websiteItem.dataset.id;
             // console.log('Selected company:', websiteId);
             selectWebsite(websiteId);
         }
@@ -370,6 +416,26 @@ function selectWebsite(websiteId) {
             selectedItem.classList.add('selected');
         }
 
+        // Open website in new tab
+        if (website.startUrl) {
+            try {
+                // Ensure the URL has a protocol
+                let url = website.startUrl;
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
+
+                window.open(url, 'noopener,noreferrer');
+                console.log('Opened website:', url);
+            } catch (error) {
+                console.error('Failed to open website:', error);
+                // Fallback: try without protocol validation
+                window.open(website.startUrl, '_blank', 'noopener,noreferrer');
+            }
+        } else {
+            console.warn('No startUrl found for website:', website);
+        }
+
 
         setTimeout(() => {
             showXPathUI();
@@ -378,24 +444,27 @@ function selectWebsite(websiteId) {
             setTimeout(() => {
                 // Debug: Check if elements exist
                 const startUrlInput = document.getElementById('xpath-start-url');
+                const sourceKeyInput = document.getElementById('xpath-source-key');
                 const companyNameInput = document.getElementById('xpath-company-name');
                 const countryCodeInput = document.getElementById('xpath-source-country');
 
                 if (startUrlInput && companyNameInput) {
                     startUrlInput.value = website.startUrl;
+                    sourceKeyInput.value = website.sourceKey;
                     companyNameInput.value = website.companyName;
-                    countryCodeInput.value = website.countryCode;
+                    countryCodeInput.value = website.countryCode.toLowerCase();
                     console.log('Values set successfully');
 
                     // Force UI update (if needed)
                     startUrlInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    sourceKeyInput.dispatchEvent(new Event('input', { bubbles: true }));
                     companyNameInput.dispatchEvent(new Event('input', { bubbles: true }));
                     countryCodeInput.dispatchEvent(new Event('input', { bubbles: true }));
                 } else {
                     console.error('Input elements not found!');
                 }
 
-                showQuickNotification(`Selected ${website.companyName} for spider creation`, 'info');
+                // showQuickNotification(`Selected ${website.companyName} for spider creation`, 'info');
             }, 100); // Small delay to ensure UI is ready
 
         }, 300);
@@ -460,6 +529,129 @@ async function loadWebsitesFromAPI() {
 }
 //website list UI end
 
+
+async function publishSpider() {
+    const website = websitesData.find(w => w.companyName == websiteId);
+    console.log('Publishing spider for:', website);
+    console.log('for country:', document.getElementById('xpath-source-country').value);
+
+    // if(website) return;
+
+    try {
+        // Get the authentication token
+        const token = "215c566011a84286a440e42bb40d762347d4ab2be3334a438f9f6c2041cd57c35ca5fb28ce874110aa6873398b2d9f1c";
+        if (!token) {
+            throw new Error('Authentication token not available');
+        }
+
+        // Get current spider code and config
+        const spiderCode = document.getElementById('python-content').value;
+        const jsonConfig = document.getElementById('json-content').value;
+
+        // Validate data
+        if (!spiderCode || !jsonConfig) {
+            throw new Error('Spider code or configuration is missing');
+        }
+
+        // Prepare the payload
+        const payload = {
+            CountryCode: document.getElementById('xpath-source-country').value,
+            CompanyName: document.getElementById('xpath-company-name').value,
+            SourceKey: document.getElementById('xpath-source-key').value,
+            ConfigJson: jsonConfig,
+            SpiderCode: spiderCode,
+            IsPublished: website.isPublished || false,
+            CurrentRunningStatus: 1,
+            LastRunStarted: new Date().toISOString(),
+            LastRunCompleted: new Date().toISOString(),
+            LastRunTotalJobs: 0,
+            LastRunSuccessful: true,
+            HasNoJoblistingPage: false,
+            IsJobportal: website.isJobportal || false,
+            Created: new Date().toISOString(),
+            LastUpdated: new Date().toISOString(),
+            CreatedBy: "extension",
+            UpdatedBy: "extension",
+            Type: "crawler",
+            LastUploaded: new Date().toISOString()
+        };
+
+        console.log('Sending payload:', payload);
+
+        const response = await fetch('https://data.jobdesk.com/api/AddNewCrawler', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        const result = await response.json();
+        console.log('✅ Spider published successfully:', result);
+        return { success: true, data: result };
+
+    } catch (error) {
+        console.error('❌ Failed to publish spider:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Custom confirmation function
+function showPublishConfirmation() {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('publish-confirm-modal');
+        const confirmBtn = document.getElementById('confirm-publish-ok');
+        const cancelBtn = document.getElementById('confirm-publish-cancel');
+
+        // Show modal
+        modal.style.display = 'flex';
+
+        // Remove previous event listeners
+        confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+        cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+
+        // Get new references
+        const newConfirmBtn = document.getElementById('confirm-publish-ok');
+        const newCancelBtn = document.getElementById('confirm-publish-cancel');
+
+        // Confirm button handler
+        newConfirmBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            // document.getElementById('editor-ui').style.display = 'none';
+            resolve(true);
+        });
+
+        // Cancel button handler
+        newCancelBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            resolve(false);
+        });
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                resolve(false);
+            }
+        });
+
+        // Close with Escape key
+        const escapeHandler = (e) => {
+            if (e.key === 'Escape') {
+                modal.style.display = 'none';
+                resolve(false);
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+    });
+}
 
 function showXPathUI() {
     document.getElementById('xpath-ui').style.display = 'block';
@@ -575,7 +767,7 @@ function resendCode() {
 }
 
 function loadXPathUI() {
-    showQuickNotification('Authentication successful!', 'success');
+    // showQuickNotification('Authentication successful!', 'success');
     showXPathUI();
 }
 
@@ -586,6 +778,7 @@ function loadXPathData() {
 
         // Populate form fields
         document.getElementById('xpath-start-url').value = data['start-url'] || '';
+        document.getElementById('xpath-source-key').value = data['source-key'] || '';
         document.getElementById('xpath-company-name').value = data['company-name'] || '';
         document.getElementById('xpath-company-logo').value = data['company-logo'] || '';
         document.getElementById('xpath-source-country').value = data['source-country'] || '';
@@ -605,6 +798,7 @@ function loadXPathData() {
 function sendXPaths() {
     const formData = {
         'start-url': document.getElementById('xpath-start-url').value,
+        'source-key': document.getElementById('xpath-source-key').value,
         'company-name': document.getElementById('xpath-company-name').value,
         'company-logo': document.getElementById('xpath-company-logo').value,
         'source-country': document.getElementById('xpath-source-country').value,
@@ -636,7 +830,7 @@ function sendXPaths() {
 
             // clearFields();
         } else {
-            showQuickNotification('Error: ' + response.error, 'info');
+            showQuickNotification('Error: ' + response.error, 'error');
             toggleEditButton(false);
         }
     });
@@ -646,6 +840,7 @@ function clearFields() {
     // showQuickNotification('Clearing all fields...', 'info');
     // Clear all form fields
     document.getElementById('xpath-start-url').value = '';
+    document.getElementById('xpath-source-key').value = '';
     document.getElementById('xpath-company-name').value = '';
     document.getElementById('xpath-company-logo').value = '';
     document.getElementById('xpath-source-country').value = '';
@@ -669,9 +864,9 @@ function clearFields() {
         lastJsonConfig: null
     });
     // showNotification('All fields and data cleared successfully!', null, 'success');
-    setTimeout(() => {
-        showQuickNotification('All data cleared successfully!', 'success');
-    }, 500);
+    // setTimeout(() => {
+    //     showQuickNotification('All data cleared successfully!', 'success');
+    // }, 500);
 }
 
 // Logout functionality
@@ -740,6 +935,7 @@ function showPythonCode(code, jsonConfig) {
     // Hide other UIs and show editor
     document.getElementById('auth-ui').style.display = 'none';
     document.getElementById('xpath-ui').style.display = 'none';
+    document.getElementById('websites-ui').style.display = 'none';
     document.getElementById('editor-ui').style.display = 'block';
 
     // Set code content
@@ -787,11 +983,11 @@ function togglePlaywrightSelector(show) {
 
 function showQuickNotification(message, type = 'success') {
     const notification = document.createElement("div");
-    const bgColor = type === 'success' ? '#4caf50' : '#c7a253ff';
+    const bgColor = type === 'success' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : type === 'error' ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
 
     notification.style.cssText = `
         position: fixed;
-        top: 20px;
+        bottom: 20px;
         right: 20px;
         background: ${bgColor};
         color: white;
@@ -806,7 +1002,7 @@ function showQuickNotification(message, type = 'success') {
 
     notification.innerHTML = `
         <div style="display: flex; align-items: center; gap: 8px;">
-            <span>${type === 'success' ? '☑️' : 'ℹ️'}</span>
+            <span>${type === 'success' ? '☑️' : type === 'error' ? '❌' : '💡'}</span>
             <span>${message}</span>
         </div>
     `;

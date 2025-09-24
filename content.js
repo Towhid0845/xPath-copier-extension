@@ -72,7 +72,7 @@ if (!window.__xPathCopierInjected) {
     const notification = document.createElement("div");
     notification.style.cssText = `
       position: fixed;
-      top: 20px;
+      bottom: 20px;
       right: 20px;
       background: #4caf50;
       color: white;

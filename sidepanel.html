@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <title>jobdesk Spider</title>
+
     <style>
         * {
             margin: 0;
@@ -123,6 +124,25 @@
             color: white;
         }
 
+        .btn-copy {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            ;
+            color: white;
+            border: none;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            border: none;
+        }
+
+        .btn-custom-xpath {
+            background: linear-gradient(135deg, #78909c 0%, #546e7a 100%);
+            color: white;
+            border: none;
+        }
+
         .btn:hover {
             filter: brightness(0.95);
             /* Subtle darken on hover */
@@ -159,13 +179,6 @@
         /* XPath Form Styles */
         #xpath-ui {
             display: none;
-        }
-
-        .xpath-container {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .field-group {
@@ -244,7 +257,7 @@
             overflow-x: auto;
         }
 
-        .websites-container {
+        .screen-container {
             background: white;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -252,14 +265,14 @@
             padding-bottom: 24px;
         }
 
-        .websites-header {
+        .screen-header {
             padding: 10px 30px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             text-align: center;
         }
 
-        .websites-title {
+        .screen-title {
             font-size: 18px;
             margin-bottom: 5px;
             font-weight: 600;
@@ -271,7 +284,7 @@
             /* background: #f8f9fa; */
             border-bottom: 1px solid #e9ecef;
             display: flex;
-            justify-content: end;
+            justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
@@ -315,7 +328,6 @@
 
         .filter-btn {
             border: 1px solid #ddd;
-            /* border: none; */
             border-radius: 5px;
             padding: 3px;
             background: white;
@@ -325,17 +337,56 @@
             align-items: center;
             gap: 5px;
             transition: all 0.3s ease;
+            position: relative;
         }
 
-        .filter-btn:hover {
-            border-color: #667eea;
-            color: #667eea;
+        /* Tooltip style */
+        .filter-btn::after {
+            content: attr(data-tooltip);
+            /* use custom tooltip text */
+            position: absolute;
+            bottom: 125%;
+            /* show above button */
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            font-size: 12px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            z-index: 100;
+        }
+
+        /* Tooltip arrow */
+        .filter-btn::before {
+            content: '';
+            position: absolute;
+            bottom: 79%;
+            /* slightly below tooltip */
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        /* Show tooltip on hover */
+        .filter-btn:hover::after,
+        .filter-btn:hover::before {
+            opacity: 1;
         }
 
         .filter-btn.active {
-            background: #667eea;
-            color: white;
+            /* background: #c1cdff; */
+            /* border: 1px solid #667eea; */
             border-color: #667eea;
+            border-width: 2px;
         }
 
         .filter-icon {
@@ -414,29 +465,6 @@
             border-left: 4px solid #667eea;
         }
 
-        /* .iso2-code {
-            background: #667eea;
-            color: white;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            text-align: center;
-            text-transform: uppercase;
-        } */
-
-        /* .company-name {
-            font-weight: 500;
-            color: #333;
-            font-size: 14px;
-        }
-
-        .domain-name {
-            color: #666;
-            font-family: monospace;
-            font-size: 14px;
-        } */
-
         /* Empty State */
         .empty-state {
             padding: 60px 30px;
@@ -505,12 +533,96 @@
             }
         }
 
+        /* code editor ui */
+        .code-editor-container {
+            background: #2d2d2d;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 10px 20px;
+        }
+
+        .code-textarea {
+            width: 100%;
+            height: 600px;
+            max-height: 70vh;
+            margin: 0;
+            padding: 20px;
+            color: #d4d4d4;
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre;
+            overflow: auto;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            background: #2d2d2d;
+            border: none;
+            resize: none;
+            outline: none;
+            tab-size: 4;
+        }
+
+        .code-textarea:focus {
+            box-shadow: inset 0 0 0 1px #4dabf7;
+        }
+
+        /* Scrollbar styling for code editor */
+        .code-textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .code-textarea::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+
+        .code-textarea::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+
+        .code-textarea::-webkit-scrollbar-thumb:hover {
+            background: #777;
+            cursor: pointer;
+        }
+
+        /* Publish Confirm Modal */
+
+        #publish-confirm-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        #publish-confirm-modal>div {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
-            .filter-controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
 
             .search-box {
                 width: 100%;
@@ -538,10 +650,10 @@
                 padding: 15px;
             }
 
-            .auth-container,
-            .xpath-container {
+            /* .auth-container,
+            .screen-container {
                 padding: 20px;
-            }
+            } */
         }
 
         @media (max-width: 400px) {
@@ -648,29 +760,32 @@
 
         <!-- List of websites without spider -->
         <div id="websites-ui" style="display: none;">
-            <div class="websites-container">
-                <div class="websites-header">
-                    <h2 class="websites-title">🌐 Select a website to create a spider</h2>
+            <div class="screen-container">
+                <div class="screen-header">
+                    <h2 class="screen-title">🌐 Select a website to create a spider</h2>
                 </div>
 
                 <!-- Filter Controls -->
                 <div class="filter-controls">
-                    <!-- <div class="filter-left">
-                        <div class="search-box">
+                    <div class="filter-left">
+                        <!-- <div class="search-box">
                             <input type="text" id="website-search" placeholder="Search websites...">
                             <span class="search-icon">🔍</span>
-                        </div>
-                    </div> -->
+                        </div> -->
+                        <button class="btn btn-custom-xpath" id="custom-xpath-btn">
+                            Custom XPath
+                        </button>
+                    </div>
                     <div class="filter-right">
                         <div class="filter-buttons">
-                            <button class="filter-btn active" data-filter="no-spider">
-                                ⛔
+                            <button class="filter-btn" data-filter="no-spider" data-tooltip="No Spider">
+                                🚫
                             </button>
-                            <button class="filter-btn" data-filter="broken-spider">
-                                ⚠️
+                            <button class="filter-btn" data-filter="broken-spider" data-tooltip="Broken Spider">
+                                🪲
                             </button>
-                            <button class="filter-btn" data-filter="all">
-                                🌐
+                            <button class="filter-btn active" data-filter="all" data-tooltip="All Spider">
+                                ✨
                             </button>
                         </div>
                     </div>
@@ -719,86 +834,95 @@
 
         <!-- XPath Form UI -->
         <div id="xpath-ui">
-            <div class="xpath-container">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                    <button id="back-to-list-btn" class="btn back-button" style="font-size: 24px; padding: 0 16px 4px;">
+            <div class="screen-container">
+                <div class="screen-header">
+                    <h2 class="screen-title">🌐 Select a website to create a spider</h2>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 20px 20px 0;">
+                    <button id="back-to-list-btn" class="btn back-button"
+                        style="font-size: 20px; padding: 0 12px 3px; height: 28px;">
                         ←
                     </button>
                     <button class="btn btn-warning" id="clear-btn">Clear All</button>
                 </div>
-                <div class="field-group">
-                    <label for="xpath-start-url">Start URL</label>
-                    <input type="text" id="xpath-start-url">
-                </div>
-                <div class="field-group">
-                    <label for="xpath-company-name">Company Name</label>
-                    <input type="text" id="xpath-company-name">
-                </div>
-                <div class="field-group">
-                    <label for="xpath-company-logo">Company Logo</label>
-                    <input type="text" id="xpath-company-logo">
-                </div>
-                <div class="field-group">
-                    <label for="xpath-source-country">Source Country</label>
-                    <input type="text" id="xpath-source-country">
-                </div>
-                <div class="field-group">
-                    <label for="xpath-lang-code">Lang Code</label>
-                    <input type="text" id="xpath-lang-code">
-                </div>
-                <div class="field-group">
-                    <label for="xpath-job-link">Job Link</label>
-                    <input type="text" id="xpath-job-link">
-                </div>
-                <div class="field-group">
-                    <label for="xpath-job-title">Job Title</label>
-                    <input type="text" id="xpath-job-title">
-                </div>
-                <div class="field-group">
-                    <label for="xpath-job-location">Job Location</label>
-                    <input type="text" id="xpath-job-location">
-                </div>
-                <div class="field-group">
-                    <label for="xpath-job-content">Job Content</label>
-                    <input type="text" id="xpath-job-content">
-                </div>
-                <div class="field-group">
-                    <label>Playwright</label>
-                    <div style="display: flex; gap: 15px; margin-top: 5px;">
-                        <label style="display: flex; gap: 10px; align-items: center;"><input type="radio"
-                                name="playwright" value="true"> Yes</label>
-                        <label style="display: flex; gap: 10px; align-items: center;"><input type="radio"
-                                name="playwright" value="false" checked> No</label>
-                    </div>
-                </div>
-                <div id="playwright-selector-container" style="display: none; margin-bottom: 15px;">
-                    <div class="field-group">
-                        <label for="xpath-playwright-selector">Playwright Selector</label>
-                        <input type="text" id="xpath-playwright-selector" placeholder="Enter playwright selector">
-                    </div>
-                </div>
-                <div class="action-buttons">
-                    <button class="btn btn-primary" id="generate-btn">Generate</button>
-                    <button class="btn btn-secondary" id="edit-btn" style="display: none;">Edit Code</button>
+                <div style="margin: 10px 20px;">
 
-                    <button class="btn btn-success" id="publish-btn">Publish</button>
+                    <div class="field-group">
+                        <label for="xpath-start-url">Start URL</label>
+                        <input type="text" id="xpath-start-url">
+                    </div>
+                    <div class="field-group">
+                        <label for="xpath-source-key">Source Key</label>
+                        <input type="text" id="xpath-source-key">
+                    </div>
+                    <div class="field-group">
+                        <label for="xpath-company-name">Company Name</label>
+                        <input type="text" id="xpath-company-name">
+                    </div>
+                    <div class="field-group">
+                        <label for="xpath-company-logo">Company Logo</label>
+                        <input type="text" id="xpath-company-logo">
+                    </div>
+                    <div class="field-group">
+                        <label for="xpath-source-country">Source Country</label>
+                        <input type="text" id="xpath-source-country">
+                    </div>
+                    <div class="field-group">
+                        <label for="xpath-lang-code">Lang Code</label>
+                        <input type="text" id="xpath-lang-code">
+                    </div>
+                    <div class="field-group">
+                        <label for="xpath-job-link">Job Link</label>
+                        <input type="text" id="xpath-job-link">
+                    </div>
+                    <div class="field-group">
+                        <label for="xpath-job-title">Job Title</label>
+                        <input type="text" id="xpath-job-title">
+                    </div>
+                    <div class="field-group">
+                        <label for="xpath-job-location">Job Location</label>
+                        <input type="text" id="xpath-job-location">
+                    </div>
+                    <div class="field-group">
+                        <label for="xpath-job-content">Job Content</label>
+                        <input type="text" id="xpath-job-content">
+                    </div>
+                    <div class="field-group">
+                        <label>Playwright</label>
+                        <div style="display: flex; gap: 15px; margin-top: 5px;">
+                            <label style="display: flex; gap: 10px; align-items: center;"><input type="radio"
+                                    name="playwright" value="true"> Yes</label>
+                            <label style="display: flex; gap: 10px; align-items: center;"><input type="radio"
+                                    name="playwright" value="false" checked> No</label>
+                        </div>
+                    </div>
+                    <div id="playwright-selector-container" style="display: none; margin-bottom: 15px;">
+                        <div class="field-group">
+                            <label for="xpath-playwright-selector">Playwright Selector</label>
+                            <input type="text" id="xpath-playwright-selector" placeholder="Enter playwright selector">
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="generate-btn">Generate</button>
+                        <button class="btn btn-secondary" id="edit-btn" style="display: none;">Edit Code</button>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Code Editor UI -->
         <div id="editor-ui" style="display: none;">
-            <div style="padding: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3>Generated Spider Code</h3>
-                    <button id="back-to-form-btn" class="btn back-button" style="font-size: 24px; padding: 0 16px 4px;">
+            <div class="screen-container">
+                <div class="screen-header">
+                    <h2 class="screen-title">Generated Spider Code</h2>
+                </div>
+                <div style="display: flex; gap: 10px; padding: 20px 20px 0;">
+                    <button id="back-to-form-btn" class="btn back-button"
+                        style="font-size: 20px; padding: 0 12px 3px; height: 28px;">
                         ←
                     </button>
-                </div>
-
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                     <button id="tab-spider" class="tab-button active"
-                        style="background: #4caf50; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                        style="background: #4caf50; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-left: auto;">
                         Spider Code
                     </button>
                     <button id="tab-json" class="tab-button"
@@ -806,22 +930,51 @@
                         JSON Config
                     </button>
                 </div>
-
-                <div style="background: #2d2d2d; border-radius: 8px; overflow: hidden;">
-                    <pre id="python-content"
-                        style="margin: 0; padding: 20px; color: #d4d4d4; font-size: 13px; line-height: 1.5; white-space: pre-wrap; display: block; max-height: 60vh; overflow: auto; font-family: 'Monaco', 'Menlo', monospace;"></pre>
-                    <pre id="json-content"
-                        style="margin: 0; padding: 20px; color: #d4d4d4; font-size: 13px; line-height: 1.5; white-space: pre-wrap; display: none; max-height: 60vh; overflow: auto; font-family: 'Monaco', 'Menlo', monospace;"></pre>
+                <div class="code-editor-container">
+                    <textarea id="python-content" class="code-textarea"
+                        placeholder="Python spider code will appear here..."></textarea>
+                    <textarea id="json-content" class="code-textarea"
+                        placeholder="JSON configuration will appear here..." style="display: none;"></textarea>
                 </div>
-
-                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
-                    <button id="copy-code-btn"
-                        style="background: #4caf50; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; flex: 1;">
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; padding: 0 20px;">
+                    <button id="copy-code-btn" class="btn btn-copy">
                         Copy Code
                     </button>
-                    <button id="download-code-btn"
-                        style="background: #2196f3; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; flex: 1;">
+                    <button id="download-code-btn" class="btn btn-download">
                         Download
+                    </button>
+                    <button class="btn btn-success" id="publish-btn">Publish</button>
+                </div>
+            </div>
+
+
+            <!-- <div style="background: #2d2d2d; border-radius: 8px; overflow: hidden;">
+                <pre id="python-content"
+                    style="margin: 0; padding: 20px; color: #d4d4d4; font-size: 13px; line-height: 1.5; white-space: pre-wrap; display: block; max-height: 60vh; overflow: auto; font-family: 'Monaco', 'Menlo', monospace;"></pre>
+                <pre id="json-content"
+                    style="margin: 0; padding: 20px; color: #d4d4d4; font-size: 13px; line-height: 1.5; white-space: pre-wrap; display: none; max-height: 60vh; overflow: auto; font-family: 'Monaco', 'Menlo', monospace;"></pre>
+            </div> -->
+
+
+        </div>
+
+        <!-- Publish Modal -->
+        <!-- Confirmation Modal -->
+        <div id="publish-confirm-modal"
+            style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+            <div
+                style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                <div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>
+                <h3 style="margin: 0 0 10px 0; color: #333;">Confirm Publish</h3>
+                <p style="color: #666; margin: 0 0 20px 0; line-height: 1.5; font-size: 16px;">
+                    Do you really want to publish this spider?
+                </p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="confirm-publish-cancel" class="btn btn-secondary" style="padding: 10px 20px;">
+                        Cancel
+                    </button>
+                    <button id="confirm-publish-ok" class="btn btn-warning" style="padding: 10px 20px;">
+                        Yes, Publish
                     </button>
                 </div>
             </div>

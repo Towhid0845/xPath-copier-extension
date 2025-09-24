@@ -20,7 +20,7 @@ function createContextMenus() {
     });
 
     // Children menus
-    const fields = ["Job Link", "Job Title", "Job Location", "Job Content"];
+    const fields = ["Company Logo", "Job Link", "Job Title", "Job Location", "Job Content"];
     fields.forEach(field => {
       chrome.contextMenus.create({
         id: field.toLowerCase().replace(/\s+/g, "-"),
@@ -128,6 +128,7 @@ async function handleSendToAPI(message, sendResponse) {
   
   const payload = {
     start_url: data["start-url"] || "",
+    source_key: data["source-key"] || "",
     company_name: data["company-name"] || "",
     company_logo: data["company-logo"] || "",
     job_title_xpath: data["job-title"] || "",
