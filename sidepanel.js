@@ -3,6 +3,8 @@ let currentAuthState = 'login'; // login, forgot, verify, success
 let isAuthenticated = false;
 let currentSpiderCode = null;
 let currentJsonConfig = null;
+let pythonEditor = null;
+let jsonEditor = null;
 
 // Initialize the side panel
 document.addEventListener('DOMContentLoaded', function () {
@@ -156,8 +158,8 @@ function initializeEditorListeners() {
     document.getElementById('back-to-list-btn')?.addEventListener('click', backToSpiderList);
     document.getElementById('publish-btn')?.addEventListener('click', async function () {
         // Validate that we have code to publish
-        const spiderCode = document.getElementById('python-content').value;
-        const jsonConfig = document.getElementById('json-content').value;
+        const spiderCode = document.getElementById('python-editor').value;
+        const jsonConfig = document.getElementById('json-editor').value;
 
         if (!spiderCode.trim() || !jsonConfig.trim()) {
             showQuickNotification('Cannot publish: Spider code or configuration is empty', 'error');
@@ -232,19 +234,19 @@ function initializeOTPListeners() {
 function switchToSpiderTab() {
     document.getElementById('tab-spider').style.background = '#4caf50';
     document.getElementById('tab-json').style.background = '#666';
-    document.getElementById('python-content').style.display = 'block';
-    document.getElementById('json-content').style.display = 'none';
+    document.getElementById('python-editor').style.display = 'block';
+    document.getElementById('json-editor').style.display = 'none';
     window.currentEditorTab = 'spider';
-    window.currentEditorContent = document.getElementById('python-content').textContent;
+    window.currentEditorContent = document.getElementById('python-editor').textContent;
 }
 
 function switchToJsonTab() {
     document.getElementById('tab-spider').style.background = '#666';
     document.getElementById('tab-json').style.background = '#4caf50';
-    document.getElementById('python-content').style.display = 'none';
-    document.getElementById('json-content').style.display = 'block';
+    document.getElementById('python-editor').style.display = 'none';
+    document.getElementById('json-editor').style.display = 'block';
     window.currentEditorTab = 'json';
-    window.currentEditorContent = document.getElementById('json-content').textContent;
+    window.currentEditorContent = document.getElementById('json-editor').textContent;
 }
 
 function copyEditorContent() {
@@ -346,10 +348,9 @@ function renderWebsitesList(filteredData = websitesData) {
 
     if (filteredData.length === 0) {
         listContainer.innerHTML = `
-            <div class="empty-state">
-                <span class="empty-icon">🔍</span>
-                <p>No companies found matching your criteria.</p>
-            </div>
+            <tr class="empty-state">
+                <td colspan="3" class="empty-icon">🔍 No companies found matching your criteria.</td>
+            </tr>
         `;
         // updateStatistics();
         return;
@@ -495,10 +496,12 @@ async function loadWebsitesFromAPI() {
     try {
         // Show loading state
         document.getElementById('websites-list').innerHTML = `
-            <div class="loading-state">
-                <div class="loading-spinner"></div>
-                <p>Loading websites...</p>
-            </div>
+            <tr>
+                <td class="loading-state" colspan="3">
+                    <div class="loading-spinner"></div>
+                    <p>Loading websites...</p>
+                </td>
+            </tr>
         `;
 
         const token = '215c566011a84286a440e42bb40d762347d4ab2be3334a438f9f6c2041cd57c35ca5fb28ce874110aa6873398b2d9f1c';
@@ -545,8 +548,8 @@ async function publishSpider() {
         }
 
         // Get current spider code and config
-        const spiderCode = document.getElementById('python-content').value;
-        const jsonConfig = document.getElementById('json-content').value;
+        const spiderCode = document.getElementById('python-editor').value;
+        const jsonConfig = document.getElementById('json-editor').value;
 
         // Validate data
         if (!spiderCode || !jsonConfig) {
@@ -939,19 +942,110 @@ function showPythonCode(code, jsonConfig) {
     document.getElementById('editor-ui').style.display = 'block';
 
     // Set code content
-    document.getElementById('python-content').textContent = code;
-    document.getElementById('json-content').textContent = JSON.stringify(jsonConfig, null, 2);
+    // document.getElementById('python-content').textContent = code;
+    // document.getElementById('json-content').textContent = JSON.stringify(jsonConfig, null, 2);
+
+    // Initialize editors if not already done
+    if (!pythonEditor || !jsonEditor) {
+        initializeAceEditors();
+    }
+
+    // Set the code content
+    setTimeout(() => {
+        pythonEditor.setValue(code || "# No spider code generated");
+        pythonEditor.clearSelection();
+
+        const jsonString = typeof jsonConfig === 'string'
+            ? jsonConfig
+            : JSON.stringify(jsonConfig, null, 2);
+        jsonEditor.setValue(jsonString || "{}");
+        jsonEditor.clearSelection();
+        jsonEditor.gotoLine(1, 0, false); // Move cursor to top
+
+        pythonEditor.session.bgTokenizer.start(0);
+        jsonEditor.session.bgTokenizer.start(0);
+    }, 100);
 
     // Reset tabs to spider view
     document.getElementById('tab-spider').style.background = '#4caf50';
     document.getElementById('tab-json').style.background = '#666';
-    document.getElementById('python-content').style.display = 'block';
-    document.getElementById('json-content').style.display = 'none';
+    document.getElementById('python-editor').style.display = 'block';
+    document.getElementById('json-editor').style.display = 'none';
 
     // Store current content for copy/download
     window.currentEditorContent = code;
     window.currentEditorTab = 'spider';
     window.currentJsonContent = JSON.stringify(jsonConfig, null, 2);
+}
+
+function initializeAceEditors() {
+    // pythonEditor = ace.edit("python-editor");
+    // pythonEditor.session.setMode("ace/mode/python");
+
+    // jsonEditor = ace.edit("json-editor");
+    // jsonEditor.session.setMode("ace/mode/json");
+
+    // pythonEditor.setValue("# Your spider code will appear here...");
+    // pythonEditor.clearSelection();
+
+    // jsonEditor.setValue("{Your JSON configuration will appear here...}");
+    // jsonEditor.clearSelection();
+
+    try {
+        // Initialize Python editor
+        pythonEditor = ace.edit("python-editor");
+        pythonEditor.setTheme("ace/theme/monokai");
+        pythonEditor.session.setMode("ace/mode/python");
+        pythonEditor.setOptions({
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: false,
+            enableSnippets: true,
+            showLineNumbers: true,
+            showGutter: true,
+            showPrintMargin: false,
+            highlightActiveLine: true,
+            fontSize: "13px",
+            fontFamily: "'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
+            wrap: true,
+            tabSize: 4,
+            useSoftTabs: true,
+            foldStyle: "markbegin",
+            enableMultiselect: false
+        });
+
+        // Initialize JSON editor
+        jsonEditor = ace.edit("json-editor");
+        jsonEditor.setTheme("ace/theme/monokai");
+        jsonEditor.session.setMode("ace/mode/json");
+        jsonEditor.setOptions({
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: false,
+            enableSnippets: true,
+            showLineNumbers: true,
+            showGutter: true,
+            showPrintMargin: false,
+            highlightActiveLine: true,
+            fontSize: "13px",
+            fontFamily: "'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
+            wrap: true,
+            tabSize: 2,
+            useSoftTabs: true,
+            foldStyle: "markbegin",
+            enableMultiselect: false
+        });
+
+        // Set default values
+        pythonEditor.setValue("# Your spider code will appear here...\n# Syntax highlighting and code folding will work!");
+        pythonEditor.clearSelection();
+
+        jsonEditor.setValue("{\n  \"config\": \"Your JSON configuration will appear here...\"\n}");
+        jsonEditor.clearSelection();
+
+        console.log("Ace editors initialized successfully");
+
+    } catch (error) {
+        console.error("Error initializing Ace Editor:", error);
+    }
 }
 
 // Add escapeHtml function to sidepanel.js

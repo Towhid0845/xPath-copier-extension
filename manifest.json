@@ -3,22 +3,33 @@
   "name": "jobdesk Spider Plugin",
   "version": "1.0",
   "description": "Create job spider automatically using XPath Copier Extension",
-  "permissions": ["activeTab", "scripting", "storage", "clipboardWrite", "contextMenus", "sidePanel"],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "clipboardWrite",
+    "contextMenus",
+    "sidePanel"
+  ],
   "background": {
     "service_worker": "background.js"
   },
-  "side_panel": { 
+  "side_panel": {
     "default_path": "sidepanel.html"
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_end"
     }
   ],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "",
     "default_title": "jobdesk Spider"
   },
   "icons": {
@@ -26,10 +37,14 @@
     "48": "logo.png",
     "128": "logo.png"
   },
-   "web_accessible_resources": [
+  "web_accessible_resources": [
     {
-      "resources": ["logo.svg"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "logo.svg"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }
