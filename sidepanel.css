@@ -530,27 +530,8 @@ td {
 
 .editor-tab{
     border: 1px solid #ccc;
+    min-height: 75vh;
 }
-/* .ace_editor {
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
-    font-size: 13px !important;
-    border-radius: 0 0 8px 8px;
-}
-
-.ace_gutter {
-    background: #1e1e1e !important;
-    color: #858585 !important;
-    border-right: 1px solid #333 !important;
-}
-
-.editor-tab.active {
-    display: block !important;
-}
-
-.editor-tab {
-    display: none !important;
-} */
-
 
 /* Publish Confirm Modal */
 
