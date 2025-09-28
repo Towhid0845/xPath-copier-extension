@@ -1,3 +1,4 @@
+/* common UI Styles */
 * {
     margin: 0;
     padding: 0;
@@ -10,14 +11,59 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #f8f9fa;
     padding: 0;
-    overflow-x: hidden;
+    /* overflow-x: hidden; */
+    overflow: hidden;
 }
 
 .container {
     width: 100%;
     min-height: 100vh;
-    padding: 25px;
 }
+
+#websites-ui {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.screen-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    padding-bottom: 24px;
+}
+
+.screen-header {
+    padding: 10px 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-align: center;
+}
+
+.screen-title {
+    font-size: 18px;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.screen-nav {
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.screen-body {
+    overflow-x: auto;
+    overflow-y: auto;
+    height: calc(100vh - 100px);
+    ;
+}
+
+/* end of common UI Styles */
 
 /* Auth UI Styles */
 #auth-ui {
@@ -25,11 +71,17 @@ body {
 }
 
 .auth-container {
+    height: 100vh;
     background: white;
     padding: 25px;
     border-radius: 12px;
+    /* border: 1px solid #e9ecef; */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    /* margin: auto 20px; */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* align-items: center; */
 }
 
 .auth-title {
@@ -194,7 +246,7 @@ body {
 .action-buttons {
     display: flex;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
 /* OTP Styles */
@@ -232,47 +284,6 @@ body {
 }
 
 
-/* Websites UI Styles */
-#websites-ui {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.table-container {
-    overflow-x: auto;
-}
-
-.screen-container {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    padding-bottom: 24px;
-}
-
-.screen-header {
-    padding: 10px 30px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    text-align: center;
-}
-
-.screen-title {
-    font-size: 18px;
-    margin-bottom: 5px;
-    font-weight: 600;
-}
-
-/* Filter Controls */
-.filter-controls {
-    padding: 10px 20px;
-    border-bottom: 1px solid #e9ecef;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-}
 
 .search-box {
     position: relative;
@@ -437,7 +448,7 @@ td {
 .empty-state {
     padding: 60px 30px;
     text-align: center;
-    color: #999;  
+    color: #999;
     grid-column: 1 / -1;
 }
 
@@ -500,17 +511,10 @@ td {
     }
 }
 
-/* code editor ui */
-.code-editor-container {
-    background: #2d2d2d;
-    border-radius: 8px;
-    overflow: hidden;
-    margin: 10px 20px;
-}
-
-.editor-tab{
+.editor-tab {
     border: 1px solid #ccc;
-    min-height: 75vh;
+    min-height: 80vh;
+    border-radius: 8px;
 }
 
 /* Publish Confirm Modal */
@@ -573,13 +577,6 @@ td {
         flex-direction: column;
         gap: 15px;
     }
-}
-
-@media (max-width: 600px) {
-    .container {
-        padding: 15px;
-    }
-
 }
 
 @media (max-width: 400px) {

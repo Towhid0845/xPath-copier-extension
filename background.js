@@ -96,27 +96,8 @@ function openSidePanelForAuth() {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('Received message:', message.action);
   switch (message.action) {
-    case "sendToAPI":
-      handleSendToAPI(message, sendResponse);
-      return true; // Keep channel open for async response
-      
+
     case "openSidePanel":
-      // chrome.windows.getCurrent((window) => {
-      //   if (chrome.runtime.lastError) {
-      //     console.error('Error getting current window:', chrome.runtime.lastError);
-      //     sendResponse({ success: false, error: 'Cannot access current window' });
-      //     return;
-      //   }
-        
-      //   chrome.sidePanel.open({ windowId: window.id })
-      //     .then(() => {
-      //       sendResponse({ success: true });
-      //     })
-      //     .catch(err => {
-      //       console.error('Failed to open side panel:', err);
-      //       sendResponse({ success: false, error: err.message });
-      //     });
-      // });
       (async () => {
         try {
           const window = await chrome.windows.getCurrent();
@@ -130,9 +111,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true;
       
     case "closeSidePanel":
-      // chrome.sidePanel.close({ windowId: chrome.windows.WINDOW_ID_CURRENT });
-      // sendResponse({ success: true });
-      // break;
       (async () => {
         try {
           await chrome.sidePanel.close({ windowId: chrome.windows.WINDOW_ID_CURRENT });
@@ -167,6 +145,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ success: true });
       return false;
     
+    case "getSpiderList":
+      handleGetSpiderList(message, sendResponse);
+      return true;
+
+    case "generateSpider":
+      handleGenerateSpider(message, sendResponse);
+      return true; // Keep channel open for async response
+      
+    case "publishSpider":
+      handlePublishSpider(message, sendResponse);
+      return true;
+
     default:
       console.warn('Unknown action received:', message.action);
       sendResponse({ success: false, error: 'Unknown action' });
@@ -174,8 +164,74 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-// Handle API requests
-async function handleSendToAPI(message, sendResponse) {
+// Handle Publish Spider API requests
+async function handlePublishSpider(message, sendResponse) {
+  try {
+    const { token, payload } = message;
+    
+    if (!token) {
+      sendResponse({ success: false, error: "Authentication token not available" });
+      return;
+    }
+    
+    if (!payload) {
+      sendResponse({ success: false, error: "No payload provided" });
+      return;
+    }
+    
+    // Validate required data
+    if (!payload.SpiderCode || !payload.SpiderCode.trim()) {
+      sendResponse({ success: false, error: "Spider code is empty or missing" });
+      return;
+    }
+
+    if (!payload.ConfigJson || !payload.ConfigJson.trim()) {
+      sendResponse({ success: false, error: "JSON configuration is empty or missing" });
+      return;
+    }
+
+    // Validate JSON format
+    try {
+      const parsedConfig = typeof payload.ConfigJson === 'string'
+        ? JSON.parse(payload.ConfigJson)
+        : payload.ConfigJson;
+      
+      // Ensure it's properly stringified
+      payload.ConfigJson = JSON.stringify(parsedConfig);
+      console.log('✅ ConfigJson validated and stringified');
+    } catch (e) {
+      sendResponse({ success: false, error: 'Invalid JSON configuration: ' + e.message });
+      return;
+    }
+    
+    console.log("📤 Publishing Spider to API:", payload);
+    
+    const response = await fetch("https://data.jobdesk.com/api/AddNewCrawler", {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log("✅ Spider Published Successfully:", result);
+    sendResponse({ success: true, data: result });
+    
+  } catch (err) {
+    console.error("❌ Publish Spider API Error:", err);
+    sendResponse({ success: false, error: err.message || "Failed to publish spider" });
+  }
+}
+
+// Handle generate spider API requests
+async function handleGenerateSpider(message, sendResponse) {
   const data = message.payload || {};
   
   const payload = {
@@ -220,6 +276,39 @@ async function handleSendToAPI(message, sendResponse) {
   } catch (err) {
     console.error("❌ API Error:", err);
     sendResponse({ success: false, error: err.message || "API request failed" });
+  }
+}
+
+// Handle Get Spider List API requests
+async function handleGetSpiderList(message, sendResponse) {
+  try {
+    const token = message.token;
+    
+    if (!token) {
+      sendResponse({ success: false, error: "No token provided" });
+      return;
+    }
+    
+    console.log("📤 Getting Spider List from API");
+    
+    const response = await fetch("https://data.jobdesk.com/api/GetSpiderListPlugin", {
+      method: "GET",
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log("✅ Spider List API Response:", data);
+    sendResponse({ success: true, data: data });
+    
+  } catch (err) {
+    console.error("❌ Spider List API Error:", err);
+    sendResponse({ success: false, error: err.message || "Failed to load spider list" });
   }
 }
 

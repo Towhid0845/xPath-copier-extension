@@ -83,11 +83,11 @@
         <div id="websites-ui" style="display: none;">
             <div class="screen-container">
                 <div class="screen-header">
-                    <h2 class="screen-title">🌐 Select a website to create a spider</h2>
+                    <h2 class="screen-title">Select a website to create a spider</h2>
                 </div>
 
                 <!-- Filter Controls -->
-                <div class="filter-controls">
+                <div class="screen-nav filter-controls">
                     <div class="filter-left">
                         <!-- <div class="search-box">
                             <input type="text" id="website-search" placeholder="Search websites...">
@@ -113,7 +113,7 @@
                 </div>
 
                 <!-- Websites List -->
-                <div class="table-container">
+                <div class="screen-body">
                     <table class="websites-list-container">
                         <thead class="list-header">
                             <tr>
@@ -157,16 +157,16 @@
         <div id="xpath-ui">
             <div class="screen-container">
                 <div class="screen-header">
-                    <h2 class="screen-title">🌐 Select a website to create a spider</h2>
+                    <h2 class="screen-title">Get the XPath to create a spider</h2>
                 </div>
-                <div style="display: flex; justify-content: space-between; padding: 20px 20px 0;">
+                <div class="screen-nav">
                     <button id="back-to-list-btn" class="btn back-button"
                         style="font-size: 20px; padding: 0 12px 3px; height: 28px;">
                         ←
                     </button>
                     <button class="btn btn-warning" id="clear-btn">Clear All</button>
                 </div>
-                <div style="margin: 10px 20px;">
+                <div class="screen-body" style="padding: 10px 10px 15px 15px;">
 
                     <div class="field-group">
                         <label for="xpath-start-url">Start URL</label>
@@ -237,7 +237,7 @@
                 <div class="screen-header">
                     <h2 class="screen-title">Generated Spider Code</h2>
                 </div>
-                <div style="display: flex; gap: 10px; padding: 20px 20px 0;">
+                <div class="screen-nav">
                     <button id="back-to-form-btn" class="btn back-button"
                         style="font-size: 20px; padding: 0 12px 3px; height: 28px;">
                         ←
@@ -251,18 +251,19 @@
                         JSON Config
                     </button>
                 </div>
-                <div class="code-editor-container">
+                <div class="screen-body" style="padding: 10px 0px 15px 10px;">
                     <div id="python-editor" class="editor-tab active"></div>
                     <div id="json-editor" class="editor-tab" style="display: none;"></div>
-                </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 10px; padding: 0 20px;">
-                    <button id="copy-code-btn" class="btn btn-copy">
-                        Copy Code
-                    </button>
-                    <button id="download-code-btn" class="btn btn-download">
-                        Download
-                    </button>
-                    <button class="btn btn-success" id="publish-btn">Publish</button>
+
+                    <div class="action-buttons">
+                        <button id="copy-code-btn" class="btn btn-copy">
+                            Copy Code
+                        </button>
+                        <button id="download-code-btn" class="btn btn-download">
+                            Download
+                        </button>
+                        <button class="btn btn-success" id="publish-btn">Publish</button>
+                    </div>
                 </div>
             </div>
         </div>

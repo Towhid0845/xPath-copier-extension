@@ -161,7 +161,7 @@ function initializeEditorListeners() {
     document.getElementById('back-to-form-btn')?.addEventListener('click', backToXPathForm);
     document.getElementById('back-to-list-btn')?.addEventListener('click', backToSpiderList);
     document.getElementById('publish-btn')?.addEventListener('click', async function () {
-        
+
         // Show custom confirmation dialog
         const confirmed = await showPublishConfirmation();
 
@@ -314,19 +314,18 @@ async function loadWebsitesFromAPI() {
             </tr>
         `;
 
-        
-        const API_URL = 'https://data.jobdesk.com/api/GetSpiderListPlugin';
-        const response = await fetch(API_URL, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+        // Send message to background script to get spider list
+        const response = await new Promise((resolve) => {
+            chrome.runtime.sendMessage({
+                action: "getSpiderList",
+                token: token
+            }, resolve);
         });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
+        if (!response.success) throw new Error(`HTTP ${response.error}`);
+        // const data = await response.json();
         // console.log('company list from API:', data);
-
-        websitesData = data; // Assuming API returns array of websites
+        console.log('company list from API:', response.data);
+        websitesData = response.data; // Assuming API returns array of websites
         renderWebsitesList();
 
     } catch (error) {
@@ -576,7 +575,7 @@ function sendXPaths() {
 
     // Send to background for API call
     chrome.runtime.sendMessage({
-        action: "sendToAPI",
+        action: "generateSpider",
         payload: formData
     }, function (response) {
         if (response.success) {
@@ -721,11 +720,8 @@ async function publishSpider() {
     console.log('Publishing spider for:', website);
     console.log('for country:', document.getElementById('xpath-source-country').value);
 
-    // if(website) return;
-
     try {
-        // Get the authentication token
-        
+
         if (!token) {
             throw new Error('Authentication token not available');
         }
@@ -753,35 +749,13 @@ async function publishSpider() {
             }
         }
 
-        // Validate data
-        if (!spiderCode || !spiderCode.trim()) {
-            throw new Error('Spider code is empty or missing');
-        }
-
-        if (!jsonConfig || !jsonConfig.trim()) {
-            throw new Error('JSON configuration is empty or missing');
-        }
-
-        // Validate JSON format
-        let configJsonString;
-        try {
-            // If jsonConfig is already a string, parse it to validate, then stringify again
-            const parsedConfig = typeof jsonConfig === 'string'
-                ? JSON.parse(jsonConfig)
-                : jsonConfig;
-
-            configJsonString = JSON.stringify(parsedConfig);
-            console.log('✅ ConfigJson validated and stringified', configJsonString);
-        } catch (e) {
-            throw new Error('Invalid JSON configuration: ' + e.message);
-        }
-
         // Prepare the payload
         const payload = {
             CountryCode: document.getElementById('xpath-source-country').value,
             CompanyName: document.getElementById('xpath-company-name').value,
             SourceKey: document.getElementById('xpath-source-key').value,
-            ConfigJson: configJsonString,
+            // ConfigJson: configJsonString,
+            ConfigJson: jsonConfig,
             SpiderCode: spiderCode,
             IsPublished: website.isPublished || false,
             CurrentRunningStatus: 1,
@@ -799,25 +773,22 @@ async function publishSpider() {
             LastUploaded: new Date().toISOString()
         };
 
-        console.log('Sending payload:', payload);
-
-        const response = await fetch('https://data.jobdesk.com/api/AddNewCrawler', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(payload)
+        // Send message to background script to publish spider
+        const response = await new Promise((resolve) => {
+            chrome.runtime.sendMessage({
+                action: "publishSpider",
+                token: token,
+                payload: payload
+            }, resolve);
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        if (!response.success) {
+            throw new Error(response.error);
         }
 
-        const result = await response.json();
-        console.log('✅ Spider published successfully:', result);
-        return { success: true, data: result };
+        // const result = await response.json();
+        console.log('✅ Spider published successfully:', response.data);
+        return { success: true, data: response.data };
 
     } catch (error) {
         console.error('❌ Failed to publish spider:', error);
