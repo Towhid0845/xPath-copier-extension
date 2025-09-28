@@ -21,8 +21,14 @@ if (!window.__xPathCopierInjected) {
       // Copy to clipboard
       copyToClipboard(xpath);
       showQuickNotification(`XPath copied for ${request.field}`);
+
+      sendResponse({ success: true, xpath: xpath });
+    }else {
+      // If we don't handle this action, send a response anyway
+      sendResponse({ success: false, error: "Action not handled or no element selected" });
     }
-    return true;
+    // return true;
+    return false;
   });
 
   // function createOpenButton() {

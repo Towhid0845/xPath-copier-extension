@@ -225,6 +225,7 @@ function showXPathUI() {
     document.getElementById('xpath-ui').style.display = 'block';
     document.getElementById('auth-ui').style.display = 'none';
     document.getElementById('websites-ui').style.display = 'none';
+    document.getElementById('editor-ui').style.display = 'none';
     loadXPathData();
 }
 

@@ -55,7 +55,19 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     // User is authenticated - send XPath copy message
     chrome.tabs.sendMessage(tab.id, {
       action: "copyXPath",
-      field: info.menuItemId // e.g. "job-title"
+      field: info.menuItemId 
+    }, (response) => {
+      // Handle response from content script
+      if (chrome.runtime.lastError) {
+        console.error('Error sending message to content script:', chrome.runtime.lastError);
+        return;
+      }
+      
+      if (response && response.success) {
+        console.log('XPath copied successfully:', response.xpath);
+      } else {
+        console.warn('Failed to copy XPath:', response?.error);
+      }
     });
   });
 });
@@ -82,34 +94,55 @@ function openSidePanelForAuth() {
 
 // Handle messages from side panel and content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log('Received message:', message.action);
   switch (message.action) {
     case "sendToAPI":
       handleSendToAPI(message, sendResponse);
       return true; // Keep channel open for async response
       
     case "openSidePanel":
-      chrome.windows.getCurrent((window) => {
-        if (chrome.runtime.lastError) {
-          console.error('Error getting current window:', chrome.runtime.lastError);
-          sendResponse({ success: false, error: 'Cannot access current window' });
-          return;
-        }
+      // chrome.windows.getCurrent((window) => {
+      //   if (chrome.runtime.lastError) {
+      //     console.error('Error getting current window:', chrome.runtime.lastError);
+      //     sendResponse({ success: false, error: 'Cannot access current window' });
+      //     return;
+      //   }
         
-        chrome.sidePanel.open({ windowId: window.id })
-          .then(() => {
-            sendResponse({ success: true });
-          })
-          .catch(err => {
-            console.error('Failed to open side panel:', err);
-            sendResponse({ success: false, error: err.message });
-          });
-      });
+      //   chrome.sidePanel.open({ windowId: window.id })
+      //     .then(() => {
+      //       sendResponse({ success: true });
+      //     })
+      //     .catch(err => {
+      //       console.error('Failed to open side panel:', err);
+      //       sendResponse({ success: false, error: err.message });
+      //     });
+      // });
+      (async () => {
+        try {
+          const window = await chrome.windows.getCurrent();
+          await chrome.sidePanel.open({ windowId: window.id });
+          sendResponse({ success: true });
+        } catch (err) {
+          console.error('Failed to open side panel:', err);
+          sendResponse({ success: false, error: err.message });
+        }
+      })();
       return true;
       
     case "closeSidePanel":
-      chrome.sidePanel.close({ windowId: chrome.windows.WINDOW_ID_CURRENT });
-      sendResponse({ success: true });
-      break;
+      // chrome.sidePanel.close({ windowId: chrome.windows.WINDOW_ID_CURRENT });
+      // sendResponse({ success: true });
+      // break;
+      (async () => {
+        try {
+          await chrome.sidePanel.close({ windowId: chrome.windows.WINDOW_ID_CURRENT });
+          sendResponse({ success: true });
+        } catch (err) {
+          console.error('Failed to close side panel:', err);
+          sendResponse({ success: false, error: err.message });
+        }
+      })();
+      return true;
       
     case "checkAuthStatus":
       chrome.storage.local.get(['isAuthenticated'], (result) => {
@@ -117,7 +150,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
       return true; // Keep channel open for async response
       
+    case "updateXPathField":
+      // Handle XPath field updates from content script
+      console.log('Updating XPath field:', message);
+      
+      // Forward the message to the side panel if it's open
+      chrome.runtime.sendMessage({
+        action: "updateXPathField",
+        field: message.field,
+        value: message.value 
+      }).catch(err => {
+        console.log('Side panel not available to receive update:', err);
+      });
+      
+      // Always send a response
+      sendResponse({ success: true });
+      return false;
+    
     default:
+      console.warn('Unknown action received:', message.action);
+      sendResponse({ success: false, error: 'Unknown action' });
       return false;
   }
 });
